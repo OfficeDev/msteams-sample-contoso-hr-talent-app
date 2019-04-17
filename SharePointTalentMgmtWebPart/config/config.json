@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "contoso-talent-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/contosoTalent/ContosoTalentWebPart.js",
+          "manifest": "./src/webparts/contosoTalent/ContosoTalentWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "ContosoTalentWebPartStrings": "lib/webparts/contosoTalent/loc/{locale}.js"
+  }
+}

@@ -1,0 +1,53 @@
+[
+  {
+    "locationId": 1,
+    "city": "San Francisco",
+    "state": "CA"
+  },
+  {
+    "locationId": 2,
+    "city": "London"
+  },
+  {
+    "locationId": 3,
+    "city": "Singapore"
+  },
+  {
+    "locationId": 4,
+    "city": "Dubai"
+  },
+  {
+    "locationId": 5,
+    "city": "Frankfurt"
+  },
+  {
+    "locationId": 6,
+    "city": "New York",
+    "state": "NY"
+  },
+  {
+    "locationId": 7,
+    "city": "Chicago",
+    "state": "IL"
+  },
+  {
+    "locationId": 8,
+    "city": "Dallas",
+    "state": "TX"
+  },
+  {
+    "locationId": 9,
+    "city": "Miami",
+    "state": "FL"
+  },
+  {
+    "locationId": 10,
+    "city": "Los Angeles",
+    "state": "CA"
+  },
+  {
+    "locationId": 11,
+    "city": "Denver",
+    "state": "CO"
+  }
+]

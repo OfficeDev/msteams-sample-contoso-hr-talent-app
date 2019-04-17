@@ -1,0 +1,242 @@
+@import '~@microsoft/sp-office-ui-fabric-core/dist/sass/SPFabricCore.scss';
+
+.row {
+  @include ms-Grid-row;
+  padding: 5px 20px;
+}
+
+.wideRow {
+  padding: 20px;
+}
+
+.center {
+  text-align: center;
+}
+
+.warning {
+  color: red;
+}
+
+.sharepoint{
+  font-family: "Segoe UI Web (West European)",Segoe UI,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+  width: 95%;
+  .jobTitleHeader {
+    background-color: #edebea;
+  }
+
+  .headerFilter {
+    .activeBlock {
+      background-color: #0078d4;
+    }
+
+    .activeBlock.block:hover {
+      background-color: #0078d4;
+    }
+
+    .block:hover {
+      background-color: #EEE;
+    }
+  }
+
+  .collapsible {
+    color: #2b88d8;
+  }
+
+  .dropdown { 
+    a:hover {
+      background-color: #0078d4;
+      color: $ms-color-white;
+    }
+  }
+}
+
+.teams {
+  font-family: "Segoe UI Web (West European)",Segoe UI,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+  width: 95%;
+  .jobTitleHeader {
+    background-color: #edebea;
+  }
+  
+  .headerFilter {
+    .activeBlock {
+      background-color: #bdbde6;
+    }
+
+    .activeBlock.block:hover {
+      background-color: #bdbde6;
+    }
+
+    .block:hover {
+      background-color: #EEE;
+    }
+  }
+
+  .collapsible {
+    color: #6264a7;
+  }
+
+  .dropdown { 
+    a:hover {
+      background-color: #8b8cc7;
+      color: $ms-color-white;
+    }
+  }
+}
+
+.headerFilter {
+  text-align: center;
+  margin: 0 !important;
+  padding: 20px 0;
+
+  .baseBlock {
+    height: 50px;
+    line-height: 50px;
+  }
+
+  .block {
+    background-color: #f3f2f1; 
+    border-left: 1px solid rgba(37,36,36,.25);
+    border-top: 1px solid rgba(37,36,36,.25);
+    border-bottom: 1px solid rgba(37,36,36,.25);
+    cursor: pointer;
+
+    .mainLabel {
+      font-size: 16px;
+      color: rgba(37, 36, 36, 0.75);
+    }
+  }
+
+  .inactiveBlock {
+    pointer-events: none;
+    cursor: default;
+    color: rgba(37, 36, 36, 0.25);
+
+    .mainLabel {
+      font-size: 16px;
+      color: rgba(37, 36, 36, 0.25);
+    }
+  }
+
+  .icon {
+    padding-left: 10px;
+    cursor: pointer;
+    vertical-align: bottom;
+  }
+}
+
+.jobTitleHeader{
+  width: 100%;
+  color: rgba(37, 36, 36, 0.75);
+
+  .icon {
+    padding-right: 10px;
+    vertical-align: bottom;
+  }
+
+  .iconRight {
+    padding-left: 10px;
+    vertical-align: bottom;
+    cursor: pointer;
+  }
+
+  .internalRow {
+    @include ms-Grid-row;
+    padding: 5px 0;
+  }
+}
+
+.cursorPointer {
+  cursor: pointer;
+}
+
+.itemImage {
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  margin-right: 10px;
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  display: inline-block;
+
+  img {
+      display: block;
+      opacity: 1;
+      width: 100%;
+      height: auto;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+  }
+}
+
+.imageSignature {
+  text-align: left;
+}
+
+.gridList {
+  padding: 20px 0;
+
+  .headerRow {
+    color: rgba(37, 36, 36, 0.65);
+    font-size: 12px;
+    padding: 10px 0;
+  }
+
+  .itemRow {
+    background-color:$ms-color-white;
+    padding: 10px 0;
+  }
+
+  .itemRow:hover {
+    background-color: #EEE;
+  }
+
+  .stageColumn {
+    cursor: pointer;
+  }
+
+  .icon {
+    padding-left: 10px;
+    cursor: pointer;
+    vertical-align: bottom;
+  }
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownContent {
+  display: none;
+  position: absolute;
+  background-color: $ms-color-white;
+  border: 1px solid #edebea;
+  min-width: 120px;
+  overflow: auto;
+  z-index: 1;
+}
+
+.dropdownContent a {
+  color: $ms-color-black;
+  padding: 6px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.show {display: block !important; }
+.hidden { display: none !important; }
+
+.collapsible {
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.collapsibleContent {
+  display: none;
+  overflow: hidden;
+}

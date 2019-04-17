@@ -1,0 +1,146 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.3/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.3",
+  "version": "1.0",
+  "id": "56841a09-2033-4c78-8463-127a1430e9e3",
+  "packageName": "com.contoso.talentapp",
+  "developer": {
+    "name": "Contoso",
+    "websiteUrl": "https://website.com/",
+    "privacyUrl": "https://website.com/privacy",
+    "termsOfUseUrl": "https://website.com/app-tos"
+  },
+  "name": {
+    "short": "Contoso Talent",
+    "full": "Contoso Talent and Recruiting App"
+  },
+  "description": {
+    "short": "Talent app for Contoso managers and recruiters",
+    "full": "This sample Recruiting and Talent app showcases many of the capabilities Microsoft Teams supports.  App content is hosted for illustrative purposes only."
+  },
+  "icons": {
+    "outline": "outline_icon.png",
+    "color": "color_icon.png"
+  },
+  "accentColor": "#020081",
+  "configurableTabs": [
+    {
+      "configurationUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/TeamTabConfig.html?v=1",
+      "canUpdateConfiguration": true,
+      "scopes": [ "team", "groupchat" ]
+    }
+  ],
+  "staticTabs": [
+    {
+      "entityId": "OpenPositionsTab",
+      "name": "Assigned to you",
+      "contentUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/OpenPositionsPersonalTab.html?v=1",
+      "websiteUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/OpenPositionsPersonalTab.html?v=1&web=1",
+      "scopes": [ "personal" ]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "b3408763-2e88-4930-b37e-cbe09b757dba",
+      "needsChannelSelector": false,
+      "isNotificationOnly": false,
+      "scopes": [ "team", "personal", "groupchat" ],
+      "supportsFiles": true,
+      "commandLists": [
+        {
+          "scopes": [ "team", "personal" ],
+          "commands": [
+            {
+              "title": "help",
+              "description": "Find out what I can do"
+            },
+            {
+              "title": "candidate details",
+              "description": "Get information about a specific candidate by name"
+            },
+            {
+              "title": "new job posting",
+              "description": "Create a new job posting"
+            },
+            {
+              "title": "top candidates",
+              "description": "List the top candidates for a given position ID"
+            },
+            {
+              "title": "schedule interview",
+              "description": "Schedule an interview given the candidate name and position ID"
+            },
+            {
+              "title": "open positions",
+              "description": "Look up open positions within your organization"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "connectors": [
+    {
+      "connectorId": "f671aa34-8f5b-4540-9d85-e4ea97fccddb",
+      "scopes": [
+        "team"
+      ],
+      "configurationUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/ConnectorConfig.html"
+    }
+  ],
+  "composeExtensions": [
+    {
+      "botId": "b3408763-2e88-4930-b37e-cbe09b757dba",
+      "canUpdateConfiguration": false,
+      "commands": [
+        {
+          "id": "searchPositions",
+          "title": "Positions",
+          "initialRun": true,
+          "description": "Search positions by keyword",
+          "parameters": [
+            {
+              "name": "searchText",
+              "title": "Keywords",
+              "description": "Search by keyword"
+            }
+          ]
+        },
+        {
+          "id": "searchCandidates",
+          "title": "Candidates",
+          "initialRun": true,
+          "description": "Search candidates by name",
+          "parameters": [
+            {
+              "name": "searchText",
+              "title": "Name",
+              "description": "Search by name"
+            }
+          ]
+        },
+        {
+          "id": "openNewPosition",
+          "title": "Create position",
+          "description": "Open a new position",
+          "type": "action",
+          "fetchTask": true,
+          "parameters": [{
+            "name": "empty",
+            "title": "empty"
+          }]
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "token.botframework.com",
+    "talent-app-v3.azurewebsites.net",
+    "*.ngrok.io",
+    "*.azurewebsites.net"
+  ]
+}
