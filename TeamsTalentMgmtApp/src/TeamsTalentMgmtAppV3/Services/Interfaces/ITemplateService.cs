@@ -1,6 +1,6 @@
 ﻿using System;
 using AdaptiveCards;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.Services.Interfaces
 {

@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using AutoMapper;
 using Microsoft.Bot.Connector;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Models.Extensions;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.TypeConverters
 {
@@ -21,7 +20,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
             }
 
             card.Title = candidate.Name;
-            card.Text = $"Current role: {candidate.CurrentRole} | {candidate.Location.GetLocationString()}";
+            card.Text = $"Current role: {candidate.CurrentRole} | {candidate.Location?.LocationAddress ?? string.Empty}";
             card.Images = new List<CardImage>
             {
                 new CardImage(candidate.ProfilePicture)

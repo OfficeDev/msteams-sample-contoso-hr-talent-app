@@ -50,8 +50,10 @@ export class Candidate {
                     <div class="ms-sm2 ms-Grid-col">${c.phone}</div>
                     <div class="ms-sm3 ms-Grid-col">${c.location.city}, ${c.location.state}</div>
                     <div class="ms-sm2 ms-Grid-col stage-btn ${styles.dropdown}" data-index="${index}" data-positionId="${c.positionId}">
-                        <span class="${offlineMode ? `` : styles.stageColumn} label-${c.candidateId}" data-index="${index}" data-positionId="${c.positionId}">${c.stage}</span>
-                        ${this.getChevronMenu(offlineMode, index, c.positionId)}
+                        <div class="ms-sm12 ${styles.hideWideContent}">
+                            <span class="${offlineMode ? `` : styles.stageColumn} label-${c.candidateId}" data-index="${index}" data-positionId="${c.positionId}">${c.stage}</span>
+                            ${this.getChevronMenu(offlineMode, index, c.positionId)}
+                        </div>
                         <div id="stagesDropdown-${c.positionId}-${index}" class="${styles.dropdownContent}">
                             <a class="change-state-btn" data-index="${index}" data-id="${c.candidateId}" data-positionId="${c.positionId}" data-stage="Applied" href="#applied" style="display: ${c.stage === 'Applied' ? 'none;' : 'block'}">Applied</a>
                             <a class="change-state-btn" data-index="${index}" data-id="${c.candidateId}" data-positionId="${c.positionId}" data-stage="Screening" href="#screening" style="display: ${c.stage === 'Screening' ? 'none;' : 'block'}">Screening</a>

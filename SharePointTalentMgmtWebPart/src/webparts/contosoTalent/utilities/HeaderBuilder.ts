@@ -35,23 +35,23 @@ export class HeaderBuilder {
 
         let template: string = `
             <div class="${styles.row} ${styles.headerFilter}">
-                <div class="ms-Grid-col ms-sm2 ${styles.baseBlock} ${styles.block} ${(activeStyle === "All") ? styles.activeBlock : ""}" data-type="All">
+                <div class="ms-Grid-col ms-sm2 ${styles.hideWideContent} ${styles.baseBlock} ${styles.block} ${(activeStyle === "All") ? styles.activeBlock : ""}" data-type="All">
                     <strong data-type="All" class="${styles.mainLabel}">All</strong>
                     <span data-type="All"> (${candidates.length})</span>
                 </div>
-                <div class="ms-Grid-col ms-sm2 ${styles.baseBlock} ${applied.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === APPLIED && applied.length > 0) ? styles.activeBlock : ""}" data-type="${APPLIED}">
+                <div class="ms-Grid-col ms-sm2 ${styles.hideWideContent} ${styles.baseBlock} ${applied.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === APPLIED && applied.length > 0) ? styles.activeBlock : ""}" data-type="${APPLIED}">
                     <strong data-type="${APPLIED}" class="${styles.mainLabel}">${APPLIED}</strong>
                     <span data-type="${APPLIED}"> (${applied.length})</span>
                 </div>
-                <div class="ms-Grid-col ms-sm2 ${styles.baseBlock} ${screening.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === SCREENING && screening.length > 0) ? styles.activeBlock : ""}" data-type="${SCREENING}">
+                <div class="ms-Grid-col ms-sm2 ${styles.hideWideContent} ${styles.baseBlock} ${screening.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === SCREENING && screening.length > 0) ? styles.activeBlock : ""}" data-type="${SCREENING}">
                     <strong data-type="${SCREENING}" class="${styles.mainLabel}">${SCREENING}</strong>
                     <span data-type="${SCREENING}"> (${screening.length})</span>
                 </div>
-                <div class="ms-Grid-col ms-sm2 ${styles.baseBlock} ${interviewing.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === INTERVIEWING && interviewing.length > 0) ? styles.activeBlock : ""}" data-type="${INTERVIEWING}">
+                <div class="ms-Grid-col ms-sm2 ${styles.hideWideContent} ${styles.baseBlock} ${interviewing.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === INTERVIEWING && interviewing.length > 0) ? styles.activeBlock : ""}" data-type="${INTERVIEWING}">
                     <strong data-type="${INTERVIEWING}" class="${styles.mainLabel}">${INTERVIEWING}</strong>
                     <span data-type="${INTERVIEWING}"> (${interviewing.length})</span>
                 </div>
-                <div class="ms-Grid-col ms-sm2 ${styles.baseBlock} ${offered.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === "Offered" && offered.length > 0) ? styles.activeBlock : ""}" style="border-right: 1px solid rgba(37, 36, 36, 0.25);" data-type="${OFFERED}">
+                <div class="ms-Grid-col ms-sm2 ${styles.hideWideContent} ${styles.baseBlock} ${offered.length === 0 ? styles.inactiveBlock : ''} ${styles.block} ${(activeStyle === "Offered" && offered.length > 0) ? styles.activeBlock : ""}" style="border-right: 1px solid rgba(37, 36, 36, 0.25);" data-type="${OFFERED}">
                     <strong data-type="${OFFERED}" class="${styles.mainLabel}">Offer</strong>
                     <span data-type="${OFFERED}"> (${offered.length})</span>
                 </div>

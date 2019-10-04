@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,11 +16,12 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Teams;
 using Microsoft.Bot.Connector.Teams.Models;
 using Newtonsoft.Json;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Extensions;
-using TeamsTalentMgmtAppV3.Models.Bot;
-using TeamsTalentMgmtAppV3.Models.Commands;
 using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Models.Bot;
+using TeamTalentMgmtApp.Shared.Models.Commands;
+using TeamTalentMgmtApp.Shared.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV3.Services
 {
@@ -103,7 +104,10 @@ namespace TeamsTalentMgmtAppV3.Services
                     channelAccounts = channelAccounts.Where(x => membersAddedIdsList.Contains(x.Id));
                 }
 
-                await _recruiterService.SaveTeamsChannelData(activity.ServiceUrl, activity.GetTenantId(), channelAccounts.ToList(), cancellationToken);
+                await _recruiterService.SaveConversationData(activity.ServiceUrl, 
+                    activity.GetTenantId(), 
+                    channelAccounts.ToDictionary(channelAccount => channelAccount.Id, channelAccount => channelAccount.Email), 
+                    cancellationToken);
             }
         }
 
@@ -171,7 +175,7 @@ namespace TeamsTalentMgmtAppV3.Services
                 return;
             }
 
-            var candidate = await _candidateService.GetById(responseContext.CandidateId);
+            var candidate = await _candidateService.GetById(responseContext.CandidateId, cancellationToken);
             if (candidate is null)
             {
                 return;
@@ -253,7 +257,7 @@ namespace TeamsTalentMgmtAppV3.Services
                 return null;
             }
             await _candidateService.AddComment(commandData, activity.From.Name, cancellationToken);
-            var candidate = await _candidateService.GetById(commandData.CandidateId);
+            var candidate = await _candidateService.GetById(commandData.CandidateId, cancellationToken);
             return _mapper.Map<AdaptiveCard>(candidate);
         }
         
@@ -265,7 +269,7 @@ namespace TeamsTalentMgmtAppV3.Services
                 return null;
             }
             await _interviewService.ScheduleInterview(commandData, cancellationToken);
-            var candidate = await _candidateService.GetById(commandData.CandidateId);
+            var candidate = await _candidateService.GetById(commandData.CandidateId, cancellationToken);
             return _mapper.Map<AdaptiveCard>(candidate);
         }
     }

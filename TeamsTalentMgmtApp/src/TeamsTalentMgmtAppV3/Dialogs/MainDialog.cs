@@ -5,9 +5,9 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Scorables;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Teams;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Extensions;
 using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Constants;
 
 namespace TeamsTalentMgmtAppV3.Dialogs
 {
@@ -53,7 +53,7 @@ namespace TeamsTalentMgmtAppV3.Dialogs
                 query = $" '{act.Text.Trim()}'";
             }
 
-            var message = $"Sorry, I didn't understand{query}. Type {BotCommands.HelpDialogCommand} to explore commands.";
+            var message = $"Sorry, I didn't understand '{query}'. Type {BotCommands.HelpDialogCommand} to explore commands.";
             await context.PostAsync(message);
         }
 

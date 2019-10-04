@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Refit;
 using TeamsTalentMgmtAppV3.Extensions;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
 using TeamsTalentMgmtAppV3.Models.MicrosoftGraph;
-using TeamsTalentMgmtAppV3.Services.Data;
 using TeamsTalentMgmtAppV3.Services.Interfaces;
 using TeamsTalentMgmtAppV3.Services.Refit;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
+using TeamTalentMgmtApp.Shared.Services.Data;
 
 namespace TeamsTalentMgmtAppV3.Services
 {

@@ -17,8 +17,6 @@ namespace TeamsTalentMgmtAppV3.Extensions
 		private const string ComposeExtensionInvokeNameOfSubmitAction = "composeExtension/submitAction";
 		
 		private const string ComposeExtensionInvokeNameOfCardButtonClickEvent = "composeExtension/onCardButtonClicked";
-		
-		private const string FileAttachmentContentType = "application/vnd.microsoft.teams.file.download.info";
 
 		public static Attachment ToAttachment(this AdaptiveCard card)
 		{
@@ -52,7 +50,7 @@ namespace TeamsTalentMgmtAppV3.Extensions
 
 		public static bool HasFileAttachments(this Activity activity)
 		{
-			return activity.Attachments != null && activity.Attachments.Any(x => string.Equals(x.ContentType, FileAttachmentContentType, StringComparison.OrdinalIgnoreCase));
+			return activity.Attachments != null && activity.Attachments.Any(x => string.Equals(x.ContentType, FileDownloadInfo.ContentType, StringComparison.OrdinalIgnoreCase));
 		}
 		
 		public static void SendTypingActivity(this Activity activity)

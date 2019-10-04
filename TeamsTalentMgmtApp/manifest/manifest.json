@@ -1,8 +1,8 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/devPreview/MicrosoftTeams.schema.json",
-  "manifestVersion": "devPreview",
-  "version": "1.0",
-  "id": "56841a09-2033-4c78-8463-127a1430e9e3",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.5",
+  "version": "1.0.0.0",
+  "id": "fc8f73c6-d41e-4768-99e3-88474be4c0ab",
   "packageName": "com.contoso.talentapp",
   "developer": {
     "name": "Contoso",
@@ -25,7 +25,7 @@
   "accentColor": "#020081",
   "configurableTabs": [
     {
-      "configurationUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/TeamTabConfig.html?v=1",
+      "configurationUrl": "https://talent-app-v4.azurewebsites.net/StaticViews/TeamTabConfig.html?v=1",
       "canUpdateConfiguration": true,
       "scopes": [ "team", "groupchat" ]
     }
@@ -33,22 +33,22 @@
   "staticTabs": [
     {
       "entityId": "OpenPositionsTab",
-      "name": "Assigned to you",
-      "contentUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/OpenPositionsPersonalTab.html?v=1",
-      "websiteUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/OpenPositionsPersonalTab.html?v=1&web=1",
+      "name": "Potential candidates",
+      "contentUrl": "https://talent-app-v4.azurewebsites.net/StaticViews/OpenPositionsPersonalTab.html?v=1",
+      "websiteUrl": "https://talent-app-v4.azurewebsites.net/StaticViews/OpenPositionsPersonalTab.html?v=1&web=1",
       "scopes": [ "personal" ]
     }
   ],
   "bots": [
     {
-      "botId": "b3408763-2e88-4930-b37e-cbe09b757dba",
+      "botId": "fc8f73c6-d41e-4768-99e3-88474be4c0ab",
       "needsChannelSelector": false,
       "isNotificationOnly": false,
       "scopes": [ "team", "personal", "groupchat" ],
       "supportsFiles": true,
       "commandLists": [
         {
-          "scopes": [ "team", "personal" ],
+          "scopes": [ "team", "personal", "groupchat" ],
           "commands": [
             {
               "title": "help",
@@ -67,10 +67,6 @@
               "description": "List the top candidates for a given position ID"
             },
             {
-              "title": "schedule interview",
-              "description": "Schedule an interview given the candidate name and position ID"
-            },
-            {
               "title": "open positions",
               "description": "Look up open positions within your organization"
             }
@@ -81,54 +77,86 @@
   ],
   "connectors": [
     {
-      "connectorId": "f671aa34-8f5b-4540-9d85-e4ea97fccddb",
+      "connectorId": "09173102-18f4-4203-83b5-4c998bfc48e7",
       "scopes": [
         "team"
       ],
-      "configurationUrl": "https://talent-app-v3.azurewebsites.net/StaticViews/ConnectorConfig.html"
+      "configurationUrl": "https://talent-app-v4.azurewebsites.net/StaticViews/ConnectorConfig.html"
     }
   ],
   "composeExtensions": [
     {
-      "botId": "b3408763-2e88-4930-b37e-cbe09b757dba",
+      "botId": "fc8f73c6-d41e-4768-99e3-88474be4c0ab",
       "canUpdateConfiguration": false,
       "commands": [
         {
           "id": "searchPositions",
+          "type": "query",
           "title": "Positions",
-          "initialRun": true,
           "description": "Search positions by keyword",
+          "initialRun": true,
+          "fetchTask": false,
+          "context": [
+            "commandBox",
+            "compose"
+          ],
           "parameters": [
             {
               "name": "searchText",
               "title": "Keywords",
-              "description": "Search by keyword"
+              "description": "Search by keywords",
+              "inputType": "text"
             }
           ]
         },
         {
           "id": "searchCandidates",
+          "type": "query",
           "title": "Candidates",
-          "initialRun": true,
           "description": "Search candidates by name",
+          "initialRun": true,
+          "fetchTask": false,
+          "context": [
+            "commandBox",
+            "compose"
+          ],
           "parameters": [
             {
               "name": "searchText",
               "title": "Name",
-              "description": "Search by name"
+              "description": "Search by name",
+              "inputType": "text"
             }
           ]
         },
         {
           "id": "openNewPosition",
+          "type": "action",
           "title": "Create position",
           "description": "Open a new position",
-          "type": "action",
+          "initialRun": true,
           "fetchTask": true,
-          "parameters": [{
-            "name": "empty",
-            "title": "empty"
-          }]
+          "context": [
+            "compose",
+            "message"
+          ],
+          "parameters": [
+            {
+              "name": "param",
+              "title": "param",
+              "description": ""
+            }
+          ]
+        }
+      ],
+	  "messageHandlers": [
+        {
+          "type": "link",
+          "value": {
+            "domains": [
+              "*.ngrok.io"
+            ]
+          }
         }
       ]
     }
@@ -139,7 +167,7 @@
   ],
   "validDomains": [
     "token.botframework.com",
-    "talent-app-v3.azurewebsites.net",
+    "talent-app-v4.azurewebsites.net",
     "*.ngrok.io",
     "*.azurewebsites.net"
   ]

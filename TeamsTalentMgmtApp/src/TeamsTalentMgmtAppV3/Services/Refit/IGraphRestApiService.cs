@@ -14,13 +14,13 @@ namespace TeamsTalentMgmtAppV3.Services.Refit
         Task<User> GetUserByUpn(string upn);
 
         [Post("/v1.0/groups")]
-        Task<Group> CreateGroup([Body(BodySerializationMethod.Json)] Group group);
+        Task<Group> CreateGroup([Body(BodySerializationMethod.Serialized)] Group group);
         
         [Put("/v1.0/groups/{groupId}/team")]
-        Task<Team> CreateTeamForGroup(string groupId, [Body(BodySerializationMethod.Json)] Team team);
+        Task<Team> CreateTeamForGroup(string groupId, [Body(BodySerializationMethod.Serialized)] Team team);
 
         [Post("/v1.0/teams/{teamId}/channels")]
-        Task<Channel> CreateChannelForTeam(string teamId, [Body(BodySerializationMethod.Json)] Channel channel);
+        Task<Channel> CreateChannelForTeam(string teamId, [Body(BodySerializationMethod.Serialized)] Channel channel);
 
         [Post("/v1.0/teams/{teamId}/installedApps")]
         Task AddAppToTeam(string teamId, [Body] TeamsApp teamsApp);

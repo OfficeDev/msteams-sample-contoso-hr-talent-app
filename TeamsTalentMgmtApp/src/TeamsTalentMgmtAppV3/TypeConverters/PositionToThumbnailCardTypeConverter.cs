@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.Bot.Connector;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Models.Extensions;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.TypeConverters
 {
@@ -20,7 +19,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
             }
 
             card.Title = $"{position.Title} / {position.PositionExternalId}";
-            card.Text = $"Hiring manager: {position.HiringManager.Name} | {position.Location.GetLocationString()}";
+            card.Text = $"Hiring manager: {position.HiringManager.Name} | {position.Location?.LocationAddress ?? string.Empty}";
             
             return card;
         }

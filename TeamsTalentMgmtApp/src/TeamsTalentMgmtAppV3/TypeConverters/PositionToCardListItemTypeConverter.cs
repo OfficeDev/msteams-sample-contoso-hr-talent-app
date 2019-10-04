@@ -1,8 +1,9 @@
 using AutoMapper;
 using Microsoft.Bot.Connector;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Models.Bot;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Models.Bot;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.TypeConverters
 {

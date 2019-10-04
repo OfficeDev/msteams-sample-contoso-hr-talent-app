@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
-using TeamsTalentMgmtAppV3.Services.Data;
+using TeamTalentMgmtApp.Shared.Services.Data;
 
 namespace TeamsTalentMgmtAppV3.Dialogs
 {
