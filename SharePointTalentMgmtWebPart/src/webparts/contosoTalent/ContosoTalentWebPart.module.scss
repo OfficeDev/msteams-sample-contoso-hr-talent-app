@@ -83,6 +83,12 @@
   }
 }
 
+.hideWideContent {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 .headerFilter {
   text-align: center;
   margin: 0 !important;
@@ -216,6 +222,7 @@
   background-color: $ms-color-white;
   border: 1px solid #edebea;
   min-width: 120px;
+  top: 25px;
   overflow: auto;
   z-index: 1;
 }

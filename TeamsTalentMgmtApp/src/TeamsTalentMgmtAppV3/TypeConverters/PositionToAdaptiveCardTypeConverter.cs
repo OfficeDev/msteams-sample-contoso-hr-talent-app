@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using AdaptiveCards;
 using AutoMapper;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Models.Extensions;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.TypeConverters
 {
@@ -34,7 +33,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
                     Facts = new List<AdaptiveFact>
                     {
 	                    new AdaptiveFact("Position ID:", position.PositionExternalId),
-	                    new AdaptiveFact("Location:", position.Location.GetLocationString()),
+	                    new AdaptiveFact("Location:", position.Location?.LocationAddress ?? string.Empty),
 	                    new AdaptiveFact("Days open:", position.DaysOpen.ToString()),
 						new AdaptiveFact("Applicants:", position.Candidates.Count.ToString()),
                         new AdaptiveFact("Hiring manager:", position.HiringManager.Name)

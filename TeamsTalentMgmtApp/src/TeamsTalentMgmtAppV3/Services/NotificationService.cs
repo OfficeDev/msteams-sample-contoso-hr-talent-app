@@ -12,11 +12,11 @@ using Microsoft.Bot.Connector.Teams;
 using Microsoft.Bot.Connector.Teams.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Extensions;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Services.Data;
-using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
+using TeamTalentMgmtApp.Shared.Services.Data;
+using TeamTalentMgmtApp.Shared.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV3.Services
 {
@@ -25,8 +25,7 @@ namespace TeamsTalentMgmtAppV3.Services
         private readonly DatabaseContext _databaseContext;
         private readonly IMapper _mapper;
 
-        public NotificationService(DatabaseContext databaseContext,
-            IMapper mapper)
+        public NotificationService(DatabaseContext databaseContext, IMapper mapper)
         {
             _databaseContext = databaseContext;
             _mapper = mapper;
@@ -34,7 +33,9 @@ namespace TeamsTalentMgmtAppV3.Services
 
         public async Task AddSubscriber(string webhookUrl, CancellationToken cancellationToken)
         {
-            var subscription = await _databaseContext.SubscribeEvents.FirstOrDefaultAsync(x => string.Equals(x.WebhookUrl, webhookUrl, StringComparison.OrdinalIgnoreCase), cancellationToken);
+            var subscription = await _databaseContext
+                .SubscribeEvents
+                .FirstOrDefaultAsync(x => string.Equals(x.WebhookUrl, webhookUrl, StringComparison.OrdinalIgnoreCase), cancellationToken);
             if (subscription is null)
             {
                 await _databaseContext.SubscribeEvents.AddAsync(new SubscribeEvent
@@ -45,17 +46,7 @@ namespace TeamsTalentMgmtAppV3.Services
             }
         }
 
-        public async Task RemoveSubscriber(string webhookUrl, CancellationToken cancellationToken)
-        {
-            var subscription = await _databaseContext.SubscribeEvents.FirstOrDefaultAsync(x => string.Equals(x.WebhookUrl, webhookUrl, StringComparison.OrdinalIgnoreCase), cancellationToken);
-            if (subscription != null)
-            {
-                _databaseContext.Remove(subscription);
-                await _databaseContext.SaveChangesAsync(cancellationToken);
-            }
-        }
-
-        public async Task NotifyAboutStageChange(Candidate candidate, CancellationToken cancellationToken)
+        public async Task NotifyAboutStageChange(Candidate candidate, CancellationToken cancellationToken = default)
         {
             var subscribers = await _databaseContext.SubscribeEvents.ToListAsync(cancellationToken);
             var card = JsonConvert.SerializeObject(_mapper.Map<O365ConnectorCard>(candidate));
@@ -72,17 +63,17 @@ namespace TeamsTalentMgmtAppV3.Services
         public async Task NotifyRecruiterAboutNewOpenPosition(Position position, CancellationToken cancellationToken = default)
         {
             var recruiter = _databaseContext.Recruiters.Find(position.HiringManagerId);
-            if (recruiter?.TeamsChannelData is null)
+            if (recruiter?.ConversationData is null)
             {
                 return;
             }
 
-            var client = new ConnectorClient(new Uri(recruiter.TeamsChannelData.ServiceUrl));
+            var client = new ConnectorClient(new Uri(recruiter.ConversationData.ServiceUrl));
             var appId = ConfigurationManager.AppSettings["MicrosoftAppId"];
             var bot = new ChannelAccount(appId);
-            var recipient = new ChannelAccount(recruiter.TeamsChannelData.AccountId);
+            var recipient = new ChannelAccount(recruiter.ConversationData.AccountId);
             
-            var conversation = client.Conversations.CreateOrGetDirectConversation(bot, recipient, recruiter.TeamsChannelData.TenantId);
+            var conversation = client.Conversations.CreateOrGetDirectConversation(bot, recipient, recruiter.ConversationData.TenantId);
             var message = new Activity
             {
                 Text = "You have a new position assigned to you.",
@@ -96,7 +87,7 @@ namespace TeamsTalentMgmtAppV3.Services
             var card = _mapper.Map<AdaptiveCard>(position);
             
             var staticTabEntityId = "OpenPositionsTab"; // you can find this value in manifest definition
-            var staticTabName = "Assigned to you";
+            var staticTabName = "Assigned to me";
             
             card.Actions.Add(new AdaptiveOpenUrlAction
             {
@@ -110,6 +101,24 @@ namespace TeamsTalentMgmtAppV3.Services
 
             message.NotifyUser();
             await client.Conversations.SendToConversationAsync(message, cancellationToken);
+        }
+
+        public async Task RemoveSubscriber(string webhookUrl, CancellationToken cancellationToken = default)
+        {
+            var subscription = await _databaseContext
+                .SubscribeEvents
+                .FirstOrDefaultAsync(x => string.Equals(x.WebhookUrl, webhookUrl, StringComparison.OrdinalIgnoreCase), cancellationToken);
+            if (subscription != null)
+            {
+                _databaseContext.Remove(subscription);
+                await _databaseContext.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        public Task NotifyRecruiterAboutCandidateStageChange(Candidate candidate, CancellationToken cancellationToken = default)
+        {
+            //NOT implemented for v3.
+            return Task.CompletedTask;
         }
 
         private static Task PostCardAsync(string webhook, string cardJson)

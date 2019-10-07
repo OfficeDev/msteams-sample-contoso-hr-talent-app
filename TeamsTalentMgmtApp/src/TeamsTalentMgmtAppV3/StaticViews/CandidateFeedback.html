@@ -201,13 +201,13 @@
 
                     taskInfo.title = encodeURIComponent('Feedback for ' + data.name);
 
-                    var taskModuleUrl = 'https://teams.microsoft.com/l/task/' + appId + '?url=' + + taskInfo.url + '&title=' + taskInfo.title + '&completionBotId=' + botId + '&height=' + taskInfo.height + '&width=' + taskInfo.width;
+                    var taskModuleUrl = 'https://teams.microsoft.com/l/task/' + appId + '?url=' + taskInfo.url + '&title=' + taskInfo.title + '&completionBotId=' + botId + '&height=' + taskInfo.height + '&width=' + taskInfo.width;
                     $(".copyToClipboard").click(function () {
                         $(".tooltiptext").css("visibility", "visible");
                         setTimeout(function () {
                             $(".tooltiptext").css("visibility", "hidden");
                         }, 1500);
-                        navigator.clipboard.writeText(taskModuleUrl).then(function () { });
+                        copyToClipboard(taskModuleUrl);
                     });
 
                     var conductedRecruiters = [];
@@ -301,6 +301,14 @@
                 + '<img alt="' + person.name + '" class="ms-Image-image is-loaded ms-Image-image--cover ms-Image-image--portrait is-fadeIn" src="' + person.profilePicture + '" />'
                 + '</div>'
                 + '</div>';
+        }
+
+        function copyToClipboard(text) {
+            var $temp = $("<input>");
+            $("body").append($temp);
+            $temp.val(text).select();
+            document.execCommand("copy");
+            $temp.remove();
         }
 
         function getQueryStringValue(key) {

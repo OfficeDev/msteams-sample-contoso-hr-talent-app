@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using AdaptiveCards;
 using Microsoft.Bot.Connector;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Extensions;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
 using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
+using TeamTalentMgmtApp.Shared.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV3.Services
 {

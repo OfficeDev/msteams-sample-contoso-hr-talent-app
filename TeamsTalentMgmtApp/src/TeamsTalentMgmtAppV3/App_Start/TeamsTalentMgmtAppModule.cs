@@ -4,9 +4,11 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Internals.Fibers;
 using TeamsTalentMgmtAppV3.Dialogs;
 using TeamsTalentMgmtAppV3.Services;
-using TeamsTalentMgmtAppV3.Services.Data;
 using TeamsTalentMgmtAppV3.Services.Interfaces;
 using TeamsTalentMgmtAppV3.Services.MessagingExtension;
+using TeamTalentMgmtApp.Shared.AutoMapper;
+using TeamTalentMgmtApp.Shared.Services.Data;
+using TeamTalentMgmtApp.Shared.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV3
 {
@@ -101,10 +103,11 @@ namespace TeamsTalentMgmtAppV3
             // automapper
             builder.Register(c => new MapperConfiguration(cfg =>
                 {
+                    cfg.AddProfile<TeamsTalentAppBaseProfile>();
                     cfg.AddProfile(new TeamsTalentMgmtAppProfile(c.Resolve<ITemplateService>()));
                 }))
-                .AsSelf()
-                .SingleInstance();
+               .AsSelf()
+               .SingleInstance();
 
             builder.Register(c => c.Resolve<MapperConfiguration>()
                     .CreateMapper(c.Resolve))

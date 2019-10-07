@@ -4,9 +4,8 @@ using System.Configuration;
 using System.Linq;
 using AutoMapper;
 using Microsoft.Bot.Connector.Teams.Models;
-using TeamsTalentMgmtAppV3.Constants;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Models.Extensions;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.TypeConverters
 {
@@ -23,7 +22,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
                     {
                         new O365ConnectorCardFact("Stage:", $"**{candidate.PreviousStage.ToString()}** --> **{candidate.Stage.ToString()}**"),
                         new O365ConnectorCardFact("Current role:", candidate.CurrentRole),
-                        new O365ConnectorCardFact("Location:", candidate.Location.GetLocationString()),
+                        new O365ConnectorCardFact("Location:", candidate.Location?.LocationAddress ?? string.Empty),
                         new O365ConnectorCardFact("Position applied:", candidate.Position.Title),
                         new O365ConnectorCardFact("Phone number:", candidate.Phone)
                     },
@@ -32,7 +31,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
 
             if (candidate.Comments.Any() || candidate.Interviews.Any())
             {
-                var contentUrl = $"{baseUrl}/StaticViews/CandidateFeedback.html?candidateId={candidate.CandidateId}";
+                var contentUrl = $"{baseUrl}/StaticViews/CandidateFeedback.html?{Uri.EscapeDataString($"candidateId={candidate.CandidateId}")}";
                 
                 var openFeedback = new Uri(string.Format(CommonConstants.TaskModuleUrlFormat, ConfigurationManager.AppSettings["TeamsAppId"],
                             contentUrl, "Feedback for " + candidate.Name,

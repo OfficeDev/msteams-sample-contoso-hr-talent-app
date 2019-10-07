@@ -5,11 +5,10 @@ using System.Linq;
 using AdaptiveCards;
 using AutoMapper;
 using Microsoft.Bot.Connector;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Extensions;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Models.Extensions;
 using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
 namespace TeamsTalentMgmtAppV3.TypeConverters
 {
@@ -76,7 +75,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
                     Facts = new List<AdaptiveFact>
                     {
                         new AdaptiveFact("Current role:", candidate.CurrentRole),
-                        new AdaptiveFact("Location:", candidate.Location.GetLocationString()),
+                        new AdaptiveFact("Location:", candidate.Location?.LocationAddress ?? string.Empty),
                         new AdaptiveFact("Stage:", candidate.Stage.ToString()),
                         new AdaptiveFact("Position applied:", candidate.Position.Title),
                         new AdaptiveFact("Date applied:", candidate.DateApplied.ToLongDateString()),
@@ -98,7 +97,7 @@ namespace TeamsTalentMgmtAppV3.TypeConverters
 
             if (candidate.Comments.Any() || candidate.Interviews.Any())
             {
-                var contentUrl = ConfigurationManager.AppSettings["BaseUrl"] + $"/StaticViews/CandidateFeedback.html?candidateId={candidate.CandidateId}";
+                var contentUrl = ConfigurationManager.AppSettings["BaseUrl"] + $"/StaticViews/CandidateFeedback.html?{Uri.EscapeDataString($"candidateId={candidate.CandidateId}")}";
                 card.Actions.Add(new AdaptiveOpenUrlAction
                 {
                     Title = "Open candidate feedback",

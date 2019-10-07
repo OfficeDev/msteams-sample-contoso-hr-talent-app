@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using AutoMapper;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Models.Dto;
-using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
+using TeamTalentMgmtApp.Shared.Models.Dto;
+using TeamTalentMgmtApp.Shared.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV3.Controllers
 {
@@ -47,17 +47,17 @@ namespace TeamsTalentMgmtAppV3.Controllers
 
         [HttpGet]
         [Route("api/candidates/{id}")]
-        public async Task<IHttpActionResult> GetCandidateById(int id)
+        public async Task<IHttpActionResult> GetCandidateById(int id, CancellationToken cancellationToken)
         {
-            var candidate = await _candidateService.GetById(id);
+            var candidate = await _candidateService.GetById(id, cancellationToken);
             return Ok(_mapper.Map<CandidateDto>(candidate));
         }
 
         [HttpGet]
         [Route("api/candidates/{id}/profilePicture")]
-        public async Task<HttpResponseMessage> GetCandidateImageById(int id)
+        public async Task<HttpResponseMessage> GetCandidateImageById(int id, CancellationToken cancellationToken)
         {
-            var user = _mapper.Map<CandidateDto>(await _candidateService.GetById(id));
+            var user = _mapper.Map<CandidateDto>(await _candidateService.GetById(id, cancellationToken));
             using (var ms = new MemoryStream(Convert.FromBase64String(user.ProfilePictureDataOnly)))
             {
                 var result = new HttpResponseMessage(HttpStatusCode.OK)

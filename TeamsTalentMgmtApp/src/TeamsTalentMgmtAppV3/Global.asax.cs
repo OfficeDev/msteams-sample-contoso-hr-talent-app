@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Web;
 using System.Web.Hosting;
@@ -13,8 +12,7 @@ using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using TeamsTalentMgmtAppV3.Models.DatabaseContext;
-using TeamsTalentMgmtAppV3.Services.Data;
+using TeamTalentMgmtApp.Shared.Services.Data;
 
 namespace TeamsTalentMgmtAppV3
 {
@@ -85,38 +83,10 @@ namespace TeamsTalentMgmtAppV3
         {
             var db = Conversation.Container.Resolve<DatabaseContext>();
 
-            var dataSeedPath = HostingEnvironment.MapPath("~\\App_Data\\") ??
+            var dataSeedPath = HostingEnvironment.MapPath("~\\bin\\SampleData\\") ??
                                throw new DirectoryNotFoundException();
 
-            var recruiters =
-                JsonConvert.DeserializeObject<List<Recruiter>>(
-                    File.ReadAllText(Path.Combine(dataSeedPath, "recruiters.json")));
-            
-            var candidates =
-                JsonConvert.DeserializeObject<List<Candidate>>(
-                    File.ReadAllText(Path.Combine(dataSeedPath, "candidates.json")));
-            
-            var positions =
-                JsonConvert.DeserializeObject<List<Position>>(
-                    File.ReadAllText(Path.Combine(dataSeedPath, "positions.json")));
-            
-            var locations =
-                JsonConvert.DeserializeObject<List<Location>>(
-                    File.ReadAllText(Path.Combine(dataSeedPath, "locations.json")));
-            
-            var interviews =
-                JsonConvert.DeserializeObject<List<Interview>>(
-                    File.ReadAllText(Path.Combine(dataSeedPath, "interviews.json")));
-
-            db.Database.EnsureDeleted();
-
-            db.Recruiters.AddRange(recruiters);
-            db.Candidates.AddRange(candidates);
-            db.Positions.AddRange(positions);
-            db.Locations.AddRange(locations);
-            db.Interviews.AddRange(interviews);
-
-            db.SaveChanges();
+            SampleData.InitializeDatabase(dataSeedPath, db);
         }
     }
 }

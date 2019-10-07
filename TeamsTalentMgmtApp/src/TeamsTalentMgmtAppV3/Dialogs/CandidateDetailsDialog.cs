@@ -6,10 +6,10 @@ using AdaptiveCards;
 using AutoMapper;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
-using TeamsTalentMgmtAppV3.Constants;
 using TeamsTalentMgmtAppV3.Extensions;
 using TeamsTalentMgmtAppV3.Models.Bot;
-using TeamsTalentMgmtAppV3.Services.Interfaces;
+using TeamTalentMgmtApp.Shared.Constants;
+using TeamTalentMgmtApp.Shared.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV3.Dialogs
 {
