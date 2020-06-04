@@ -1,6 +1,6 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.2/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.2",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.7",
   "packageName": "com.contoso.sharepointapp",
   "id": "0f07ff82-ecce-415f-b7a2-80c1df332e7f",
   "version": "0.1",
