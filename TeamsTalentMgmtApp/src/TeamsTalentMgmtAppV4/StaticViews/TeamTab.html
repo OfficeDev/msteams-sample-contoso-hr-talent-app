@@ -161,10 +161,15 @@
     </style>
 
     <script type="text/javascript">
+
+        //todojack: make it work outside of Teams - add drop down when not in Teams
         microsoftTeams.initialize();
+
+
+        //todoscott: add SSO inside Teams and add UPN to top right of page
         $(document).ready(function () {
             microsoftTeams.getContext(function (context) {
-                var positionId = context.entityId;
+                var positionId = 1;
                 buildPage(positionId);
             });
 
