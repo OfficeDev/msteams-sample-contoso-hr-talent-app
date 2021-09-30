@@ -10,8 +10,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Newtonsoft.Json.Linq;
 
-//todoscott: stretch goal - use bot framework...
-
+// todoscott: stretch goal - use bot framework...
 namespace TeamsTalentMgmtAppV4.Bot
 {
     public class TeamsActivityHandler : ActivityHandler

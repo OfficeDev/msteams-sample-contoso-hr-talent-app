@@ -41,7 +41,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TeamTalentMgmtApp.Shared\TeamTalentMgmtApp.Shared.csproj" />
+    <Content Update="SampleData\candidates.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="SampleData\interviews.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="SampleData\locations.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="SampleData\positions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="SampleData\recruiters.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

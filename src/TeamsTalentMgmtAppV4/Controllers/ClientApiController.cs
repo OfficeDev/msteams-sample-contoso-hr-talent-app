@@ -37,8 +37,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
             _mapper = mapper;
         }
 
-        //todoscott:add controller access token logic....
-
+        // todoscott:add controller access token logic....
         [HttpGet]
         [Route("api/app")]
         public ActionResult Get() => Ok(new
