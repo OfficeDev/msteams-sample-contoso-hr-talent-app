@@ -356,7 +356,7 @@
                 };
             };
 
-            //todojack: SSO - ask for Scott's help
+            //todojack:test SSO inside Teams
 
             //function authenticate() {
             //    microsoftTeams.authentication.authenticate({
@@ -370,7 +370,7 @@
             //};
 
             $(document).ready(function () {
-                //todojack: speak to Scott, how do we remove reliance on getcontext?
+                //todoscott: pass access token when calls are made to client API controller 
                 $.get(window.location.origin + '/api/app').done(function (data) {
                     buildPage(window.localStorage.getItem("username"));
                 });
@@ -422,7 +422,6 @@
             //    }
             //    else {
 
-            //todojack: check with Scott how to get this from the access token....
 
             //            buildPage(user.userName);
             //            //}

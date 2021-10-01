@@ -162,11 +162,12 @@
 
     <script type="text/javascript">
 
-        //todojack: make it work outside of Teams - add drop down when not in Teams
+
         microsoftTeams.initialize();
 
 
-        //todojack: add SSO inside Teams and add UPN to top right of page
+        //todojack: add SSO inside Teams
+        //todoscott: pass access token when calling client APIs
         $(document).ready(function () {
             microsoftTeams.getContext(function (context) {
                 var positionId = 1;

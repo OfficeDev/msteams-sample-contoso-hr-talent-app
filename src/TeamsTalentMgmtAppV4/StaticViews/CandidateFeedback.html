@@ -192,7 +192,8 @@
                 height: "large"
             };
 
-            //todo: add SSO into this page - not required for demo app, but maybe in the future...
+            //todojack: add SSO inside Teams
+        //todoscott: pass access token when calling client APIs
 
             $.get(window.location.origin + '/api/app').done(function (data) {
                 var appId = data.appId;

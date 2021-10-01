@@ -54,7 +54,6 @@
 
     <script type="text/javascript">
 
-        //todojack: improve this page....
 
         //this is where the user will land once they have done an Azure AD sign-in, if the fallback method for SSO is used
 
@@ -116,12 +115,10 @@
 
             if (this.inTeams) {
 
-                //todojack: write if statement for teams, vs website...
 
                 microsoftTeams.authentication.notifySuccess({ idToken: response.idToken, accessToken: response.accessToken, tokenType: response.tokenType, expiresIn: response.expiresIn });
             }
             else {
-                //todojack: check scott's sample to see how to handle SSO outside of Teams
                 let redirectURL = window.localStorage.getItem("sourceHostname");
                 window.localStorage.removeItem("sourceHostname");
                 window.location.assign(redirectURL);
