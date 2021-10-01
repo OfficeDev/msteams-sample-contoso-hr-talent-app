@@ -3,52 +3,95 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal.min.js" integrity="sha384-BIOS/65fbAsb2XiCCSTlZSTTl0ZgqkOU522dpyk5meOnN2EOQ3uH+QpqEtoAtmBn" crossorigin="anonymous"></script>
+    <!--<script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal.min.js" integrity="sha384-BIOS/65fbAsb2XiCCSTlZSTTl0ZgqkOU522dpyk5meOnN2EOQ3uH+QpqEtoAtmBn" crossorigin="anonymous"></script>-->
+    <!--<script type="text/javascript" src="https://alcdn.msauth.net/browser/2.17.0/js/msal-browser.min.js"></script>-->
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <title>Contoso - Login</title>
     <script type="text/javascript">
-        function getLocalStorageData(key) {
-            var result = window.localStorage.getItem(key);
-            if (!result && window.opener) {
-                result = window.opener.localStorage.getItem(key);
-                window.localStorage.setItem(key, result);
-            }
 
-            return result;
+        //context: this page is loaded when Teams SSO cannot be performed - i.e. when user is accessed website outside of Teams, or if consent is required when loading the page inside Teams.
+
+        //declare the required parameters/options for the MSAL library to use - it will redirect back to /auth-end.html once the Azure AD sign-in process is completed
+        const msalConfig = {
+            auth: {
+                clientId: "253f51df-b6b5-4792-8347-90883f76a10a",
+                redirectUri: location.protocol + "//" + location.hostname + ":" + location.port + "/StaticViews/LoginResult.html"
+            }
+        };
+
+        //console.log("redirecting to: " + msalConfig.auth.redirectUri);
+
+        //declare scopes that you want to request in the returned access_token. If consent is required, MSAL will handle this
+
+        var requestObj = {
+            scopes: [`api://253f51df-b6b5-4792-8347-90883f76a10a/access_as_user`],
+            prompt: "select_account"
+        };
+
+        //initalize the MSAL browser clientapp with the MSAL configuration
+        const clientApp = new msal.PublicClientApplication(msalConfig);
+
+        //begins the sign-in process, by redirecting to Azure AD with the required parameters/options in this page.
+        //This SSO flow is using Code Grant with PKCE(following current best-practices)
+
+        redirectAuth = async () => {
+
+            await clientApp.handleRedirectPromise();
+
+            const accounts = clientApp.getAllAccounts();
+                clientApp.loginRedirect(requestObj);
         }
 
-        //todojack: improve this page....
+        $(this.redirectAuth);
 
-        var clientId = getLocalStorageData('userClientId');
-        var context = JSON.parse(getLocalStorageData('msTeamsContext'));
 
-        var config = {
-            redirectUri: "https://" + window.location.host + "/StaticViews/LoginResult.html",
-            cacheLocation: "localStorage",
-            navigateToLoginRequestUrl: false,
-            clientId: clientId,
-            tenant: context && context.tid
-        };
 
-        var extraQueryParamsName = {
-            scope: 'scope=',
-            loginHint: 'login_hint='
-        };
+                //end of improvments
 
-        config.displayCall = function (urlNavigate) {
-            if (urlNavigate) {
-                if (urlNavigate.indexOf(extraQueryParamsName.scope) === -1) {
-                    urlNavigate += "&" + extraQueryParamsName.scope + "openid+profile";
-                }
 
-                if (urlNavigate.indexOf(extraQueryParamsName.loginHint) === -1 && context && context.loginHint) {
-                    urlNavigate += "&" + extraQueryParamsName.loginHint + encodeURIComponent(context.loginHint);
-                }
+                //function getLocalStorageData(key) {
+                //    var result = window.localStorage.getItem(key);
+                //    if (!result && window.opener) {
+                //        result = window.opener.localStorage.getItem(key);
+                //        window.localStorage.setItem(key, result);
+                //    }
 
-                window.location.replace(urlNavigate);
-            }
-        };
+                //    return result;
+                //}
 
-        new AuthenticationContext(config).login();
+
+                //var clientId = getLocalStorageData('userClientId');
+                //var context = JSON.parse(getLocalStorageData('msTeamsContext'));
+
+                //var config = {
+                //    redirectUri: "https://" + window.location.host + "/StaticViews/LoginResult.html",
+                //    cacheLocation: "localStorage",
+                //    navigateToLoginRequestUrl: false,
+                //    clientId: clientId,
+                //    tenant: context && context.tid
+                //};
+
+                //var extraQueryParamsName = {
+                //    scope: 'scope=',
+                //    loginHint: 'login_hint='
+                //};
+
+                //config.displayCall = function (urlNavigate) {
+                //    if (urlNavigate) {
+                //        if (urlNavigate.indexOf(extraQueryParamsName.scope) === -1) {
+                //            urlNavigate += "&" + extraQueryParamsName.scope + "openid+profile";
+                //        }
+
+                //        if (urlNavigate.indexOf(extraQueryParamsName.loginHint) === -1 && context && context.loginHint) {
+                //            urlNavigate += "&" + extraQueryParamsName.loginHint + encodeURIComponent(context.loginHint);
+                //        }
+
+                //        window.location.replace(urlNavigate);
+                //    }
+                //};
+
+                //new AuthenticationContext(config).login();
     </script>
 </head>
 <body>

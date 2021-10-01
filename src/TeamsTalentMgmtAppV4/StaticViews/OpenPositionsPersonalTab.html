@@ -7,6 +7,8 @@
     <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal.min.js" integrity="sha384-BIOS/65fbAsb2XiCCSTlZSTTl0ZgqkOU522dpyk5meOnN2EOQ3uH+QpqEtoAtmBn" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode/build/jwt-decode.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
     <style type="text/css">
@@ -101,213 +103,354 @@
     </style>
 
     <script type="text/javascript">
-        microsoftTeams.initialize();
-        var activeIndex = 0;
-        var isMsteamsContext = false;
-        var maxActiveIndex;
 
-        function buildPage(recruiterId, positionId) {
-            $(".button-holder").hide();
-            $(".loading").show();
-            var apiPath = "/api/positions/open";
-            if (recruiterId && recruiterId.lastIndexOf("@") !== -1) {
-                apiPath = "/api/recruiters/" + encodeURIComponent(recruiterId.substring(0, recruiterId.lastIndexOf("@"))) + "/positions";
+
+        handlePageLoad = async () => {
+
+            try {
+                await this.initialiseTeams();
+                this.inTeams = true;
+            }
+            catch {
+                this.inTeams = false;
             }
 
-            $.get(window.location.origin + apiPath).done(function (data) {
-                var positionHtml = "";
-                $(".loading").hide();
-                if (recruiterId) {
-                    var loggedInAs = $(".loggedInAs");
-                    loggedInAs.text("You are logged in as " + recruiterId);
-                    loggedInAs.show();
+            if (this.inTeams) {
+
+                await this.signInWithTeams();
+                loadpage();
+            }
+            else {
+                outsideTeamsSignIn();
+            }
+        }
+
+        initialiseTeams = () => {
+            let rejectPromise = null;
+            let timeout = null;
+
+            const promise = new Promise((resolve, reject) => {
+                rejectPromise = reject;
+                microsoftTeams.initialize(() => {
+                    window.clearTimeout(timeout);
+                    resolve(true);
                 }
-                maxActiveIndex = data.length - 1;
-                data.forEach(function (positionInfo, index) {
-                    if (positionId && positionInfo.positionId != positionId) {
-                        return;
-                    }
-
-                    var appliedCount = 0;
-                    var screeningCount = 0;
-                    var interviewingCount = 0;
-                    var offeredCount = 0;
-                    if (positionInfo.candidates) {
-                        positionInfo.candidates.forEach(function (candidate) {
-                            if (candidate.stage === "Applied") { appliedCount++; }
-                            else if (candidate.stage === "Interviewing") { interviewingCount++; }
-                            else if (candidate.stage === "Screening") { screeningCount++; }
-                            else if (candidate.stage === "Offered") { offeredCount++; }
-                        });
-                    }
-
-                    var activeClass = index === activeIndex ? 'active' : '';
-                    positionHtml += '<div id="main-block-' + index + '" data-index="' + index + '" class="ms-Grid-row row main-block ' + activeClass + '">'
-                        + '<div class="ms-sm12 ms-Grid-col">'
-                        + '<div class="ms-Grid-row">'
-                        + '<div class="ms-sm6 ms-Grid-col">'
-                        + '<div class="ms-Grid-row row">'
-                        + '<div class="ms-sm6 ms-Grid-col large-font-size"><strong>' + positionInfo.title + '</strong></div>'
-                        + '<div class="ms-sm6 ms-Grid-col medium-font-size">Location: <strong>' + positionInfo.location.city + ', ' + positionInfo.location.state + '</strong></div>'
-                        + '</div>'
-                        + '<div class="ms-Grid-row row medium-font-size">'
-                        + '<div class="ms-sm6 ms-Grid-col"><strong>Job Details</strong></div>'
-                        + '<div class="ms-sm6 ms-Grid-col">Days Open: <strong>' + positionInfo.daysOpen + '</strong></div>'
-                        + '</div>'
-                        + '<div class="ms-Grid-row row wideRow">'
-                        + '<div id="description-' + index + '" class="ms-sm11 ms-Grid-col small-font-size" title="' + positionInfo.fullDescription + '">' + positionInfo.description + '</div>'
-                        + '</div>'
-                        + '</div>'
-                        + '<div class="ms-sm6 ms-Grid-col counters">'
-                        + ' <div class="row ms-Grid-row count-labels">'
-                        + '<div id="applied-count" class="ms-Grid-col ms-sm3">' + appliedCount + '</div>'
-                        + '<div id="screening-count" class="ms-Grid-col ms-sm3">' + screeningCount + '</div>'
-                        + '<div id="interviewing-count" class="ms-Grid-col ms-sm3">' + interviewingCount + '</div>'
-                        + '<div id="offered-count" class="ms-Grid-col ms-sm3">' + offeredCount + '</div>'
-                        + '</div>'
-                        + '<div class="row ms-Grid-row">'
-                        + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">applied</div>'
-                        + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">screening</div>'
-                        + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">interviewing</div>'
-                        + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">offered</div>'
-                        + '</div>'
-                        + '</div>'
-                        + '</div>'
-                        + '<div class="ms-Grid-row row ms-textAlignCenter">'
-                        + '<div class="ms-sm12 ms-Grid-col">'
-                        + '<i data-show-description="' + positionInfo.fullDescription + '" data-index="' + index + '" class="ms-Icon ms-Icon--ChevronDown more-info more-info-' + index + '" title="More details" aria-hidden="true" style="display: inline-block;"></i>'
-                        + '<i data-show-description="' + positionInfo.description + '" data-index="' + index + '" class="ms-Icon ms-Icon--ChevronUp more-info more-info-' + index + '" title="Less details" aria-hidden="true"></i>'
-                        + '</div>'
-                        + '</div>'
-                        + '</div>'
-                        + '</div>';
-                });
-                if (data.length === 0) {
-                    positionHtml = '<div class="ms-Grid-row row ms-textAlignCenter"><div class="ms-sm12 ms-Grid-col">No opened positions yet.</div></div>';
-                }
-                $("#position-list").html(positionHtml);
-
-                $(".main-block").click(function () {
-                    clickOnMainBlock($(this));
-                });
-
-                $(".more-info").click(function (e) {
-                    var currentObject = $(this);
-                    var index = currentObject.data("index");
-                    var closeAction = currentObject.hasClass("ms-Icon--ChevronUp");
-                    $('.more-info-' + index).toggle();
-                    var newDescription = currentObject.data("show-description");
-                    $('#description-' + index).text(newDescription);
-                    if (index === activeIndex || closeAction) {
-                        e.stopPropagation();
-                        e.cancelBubble = true;
-                    }
-                });
-
-                $(document).keydown(function (e) {
-                    var newIndex = activeIndex;
-                    switch (e.which) {
-                        case 38:
-                            if (activeIndex !== 0) { newIndex -= 1; }
-                            break;
-
-                        case 40:
-                            if (activeIndex !== maxActiveIndex) { newIndex += 1; }
-                            break;
-
-                        default: return;
-                    }
-                    clickOnMainBlock($('#main-block-' + newIndex));
-                });
+                )
             });
+            //todo: try and improve this if possible. At present this function will return that the page is not open in Teams
+            //based on the MicrosoftTeams.initialize function timing out within 2 seconds
 
-            function clickOnMainBlock(currentObject) {
-                var index = currentObject.data("index");
-                if (index !== activeIndex) {
-                    $(".active").removeClass("active");
-                    currentObject.addClass("active");
+            timeout = window.setTimeout(() => {
+                rejectPromise("Teams Initialise Timeout");
+            }, 2000);
+
+            return promise;
+        }
+
+
+        signInWithTeams = async () => {
+            try {
+
+                const result = await this.getTeamsToken();
+                let accessToken = window.localStorage.getItem("userToken");
+                return
+            }
+            catch (error) {
+                console.log("Teams SSO Error: " + error);
+                if (typeof error === "string" && error.toLowerCase() == "resourcedisabled") {
+                    console.log("Resource Disabled - probably something wrong with your manifest or Azure AD App Reg config");
+                    $("#teamsConsentButton").show();
+                    return
                 }
-                activeIndex = index;
-            };
-        };
 
-        //todojack: SSO
+                else {
+                    console.warn("error... but, it wasn't resource disabled....")
+                    $("#teamsConsentButton").show();
+                    return
+                }
+            }
+        }
 
-        function authenticate() {
+        getTeamsToken = () => {
+
+            return new Promise((resolve, reject) => {
+                microsoftTeams.authentication.getAuthToken({
+                    successCallback: (token) => {
+                        window.localStorage.setItem("userToken", token);
+                        resolve(token);
+                    },
+                    failureCallback: (reason) => {
+                        reject(reason);
+                    }
+                })
+            });
+        }
+
+        function teamsFallbackAuth() {
+
             microsoftTeams.authentication.authenticate({
                 url: window.location.origin + "/StaticViews/Login.html",
-                width: 1024,
-                height: 1024,
-                successCallback: function (userName) {
-                    buildPage(userName);
+                width: 600,
+                height: 535,
+                successCallback: function (result) {
+                },
+                failureCallback: function (reason) {
+                    handleAuthError(reason);
                 }
             });
-        };
+        }
 
-        $(document).ready(function () {
-            microsoftTeams.getContext(function (context) {
-                isMsteamsContext = true;
+        function outsideTeamsSignIn() {
+            let accessToken = window.localStorage.getItem("userToken");
+            if (accessToken != null) {
+                loadpage(accessToken);
+            }
+            else {
+                //$("#consentButton").show();
+                authRedirect();
+            }
+        }
+
+        function authRedirect() {
+            window.localStorage.setItem("sourceHostname", location.protocol + "//" + location.hostname + ":" + location.port + "/StaticViews/OpenPositionsPersonalTab.html");
+            console.log("redirectURL will be: " + window.localStorage.getItem("sourceHostname"));
+            window.location.assign(location.protocol + "//" + location.hostname + ":" + location.port + "/StaticViews/Login.html");
+        }
+
+        function getInfoFromToken(accessToken) {
+            var token = accessToken;
+            var decoded = jwt_decode(token);
+            let preferredusername = decoded.preferred_username
+            window.localStorage.setItem("username", preferredusername);
+            //decode and pull info from accessToken
+        }
+
+        function loadpage(accessToken) {
+            getInfoFromToken(accessToken);
+            var activeIndex = 0;
+            var isMsteamsContext = false;
+            var maxActiveIndex;
+
+            function buildPage(recruiterId, positionId) {
+                $(".button-holder").hide();
+                $(".loading").show();
+                var apiPath = "/api/positions/open";
+                if (recruiterId && recruiterId.lastIndexOf("@") !== -1) {
+                    apiPath = "/api/recruiters/" + encodeURIComponent(recruiterId.substring(0, recruiterId.lastIndexOf("@"))) + "/positions";
+                }
+
+                $.get(window.location.origin + apiPath).done(function (data) {
+                    var positionHtml = "";
+                    $(".loading").hide();
+                    if (recruiterId) {
+                        var loggedInAs = $(".loggedInAs");
+                        loggedInAs.text("You are logged in as " + recruiterId);
+                        loggedInAs.show();
+                    }
+                    maxActiveIndex = data.length - 1;
+                    data.forEach(function (positionInfo, index) {
+                        if (positionId && positionInfo.positionId != positionId) {
+                            return;
+                        }
+
+                        var appliedCount = 0;
+                        var screeningCount = 0;
+                        var interviewingCount = 0;
+                        var offeredCount = 0;
+                        if (positionInfo.candidates) {
+                            positionInfo.candidates.forEach(function (candidate) {
+                                if (candidate.stage === "Applied") { appliedCount++; }
+                                else if (candidate.stage === "Interviewing") { interviewingCount++; }
+                                else if (candidate.stage === "Screening") { screeningCount++; }
+                                else if (candidate.stage === "Offered") { offeredCount++; }
+                            });
+                        }
+
+                        var activeClass = index === activeIndex ? 'active' : '';
+                        positionHtml += '<div id="main-block-' + index + '" data-index="' + index + '" class="ms-Grid-row row main-block ' + activeClass + '">'
+                            + '<div class="ms-sm12 ms-Grid-col">'
+                            + '<div class="ms-Grid-row">'
+                            + '<div class="ms-sm6 ms-Grid-col">'
+                            + '<div class="ms-Grid-row row">'
+                            + '<div class="ms-sm6 ms-Grid-col large-font-size"><strong>' + positionInfo.title + '</strong></div>'
+                            + '<div class="ms-sm6 ms-Grid-col medium-font-size">Location: <strong>' + positionInfo.location.city + ', ' + positionInfo.location.state + '</strong></div>'
+                            + '</div>'
+                            + '<div class="ms-Grid-row row medium-font-size">'
+                            + '<div class="ms-sm6 ms-Grid-col"><strong>Job Details</strong></div>'
+                            + '<div class="ms-sm6 ms-Grid-col">Days Open: <strong>' + positionInfo.daysOpen + '</strong></div>'
+                            + '</div>'
+                            + '<div class="ms-Grid-row row wideRow">'
+                            + '<div id="description-' + index + '" class="ms-sm11 ms-Grid-col small-font-size" title="' + positionInfo.fullDescription + '">' + positionInfo.description + '</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '<div class="ms-sm6 ms-Grid-col counters">'
+                            + ' <div class="row ms-Grid-row count-labels">'
+                            + '<div id="applied-count" class="ms-Grid-col ms-sm3">' + appliedCount + '</div>'
+                            + '<div id="screening-count" class="ms-Grid-col ms-sm3">' + screeningCount + '</div>'
+                            + '<div id="interviewing-count" class="ms-Grid-col ms-sm3">' + interviewingCount + '</div>'
+                            + '<div id="offered-count" class="ms-Grid-col ms-sm3">' + offeredCount + '</div>'
+                            + '</div>'
+                            + '<div class="row ms-Grid-row">'
+                            + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">applied</div>'
+                            + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">screening</div>'
+                            + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">interviewing</div>'
+                            + '<div class="ms-Grid-col ms-sm3 medium-font-size ms-textAlignCenter">offered</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '<div class="ms-Grid-row row ms-textAlignCenter">'
+                            + '<div class="ms-sm12 ms-Grid-col">'
+                            + '<i data-show-description="' + positionInfo.fullDescription + '" data-index="' + index + '" class="ms-Icon ms-Icon--ChevronDown more-info more-info-' + index + '" title="More details" aria-hidden="true" style="display: inline-block;"></i>'
+                            + '<i data-show-description="' + positionInfo.description + '" data-index="' + index + '" class="ms-Icon ms-Icon--ChevronUp more-info more-info-' + index + '" title="Less details" aria-hidden="true"></i>'
+                            + '</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '</div>';
+                    });
+                    if (data.length === 0) {
+                        positionHtml = '<div class="ms-Grid-row row ms-textAlignCenter"><div class="ms-sm12 ms-Grid-col">No opened positions yet.</div></div>';
+                    }
+                    $("#position-list").html(positionHtml);
+
+                    $(".main-block").click(function () {
+                        clickOnMainBlock($(this));
+                    });
+
+                    $(".more-info").click(function (e) {
+                        var currentObject = $(this);
+                        var index = currentObject.data("index");
+                        var closeAction = currentObject.hasClass("ms-Icon--ChevronUp");
+                        $('.more-info-' + index).toggle();
+                        var newDescription = currentObject.data("show-description");
+                        $('#description-' + index).text(newDescription);
+                        if (index === activeIndex || closeAction) {
+                            e.stopPropagation();
+                            e.cancelBubble = true;
+                        }
+                    });
+
+                    $(document).keydown(function (e) {
+                        var newIndex = activeIndex;
+                        switch (e.which) {
+                            case 38:
+                                if (activeIndex !== 0) { newIndex -= 1; }
+                                break;
+
+                            case 40:
+                                if (activeIndex !== maxActiveIndex) { newIndex += 1; }
+                                break;
+
+                            default: return;
+                        }
+                        clickOnMainBlock($('#main-block-' + newIndex));
+                    });
+                });
+
+                function clickOnMainBlock(currentObject) {
+                    var index = currentObject.data("index");
+                    if (index !== activeIndex) {
+                        $(".active").removeClass("active");
+                        currentObject.addClass("active");
+                    }
+                    activeIndex = index;
+                };
+            };
+
+            //todojack: SSO - ask for Scott's help
+
+            //function authenticate() {
+            //    microsoftTeams.authentication.authenticate({
+            //        url: window.location.origin + "/StaticViews/Login.html",
+            //        width: 1024,
+            //        height: 1024,
+            //        successCallback: function (userName) {
+            //            buildPage(userName);
+            //        }
+            //    });
+            //};
+
+            $(document).ready(function () {
+                //todojack: speak to Scott, how do we remove reliance on getcontext?
                 $.get(window.location.origin + '/api/app').done(function (data) {
-                    localStorage.setItem('msTeamsContext', JSON.stringify({ tid: context && context.tid, loginHint: context.loginHint }));
-
-                    var clientId = data.botId;
-                    localStorage.setItem('userClientId', clientId);
-                    var config = {
-                        redirectUri: "https://" + window.location.host + "/StaticViews/LoginResult.html",
-                        cacheLocation: "localStorage",
-                        navigateToLoginRequestUrl: false,
-                        clientId: clientId,
-                        tenant: context && context.tid
-                    };
-
-                    if (context.loginHint) {
-                        config.extraQueryParameter = "scope=openid+profile&login_hint=" + encodeURIComponent(context.loginHint);
-                    } else {
-                        config.extraQueryParameter = "scope=openid+profile";
-                    }
-
-                    var authContext = new AuthenticationContext(config);
-                    var user = authContext.getCachedUser(clientId);
-                    if (!user) {
-                        // https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/authentication/auth-silent-aad
-                        authContext.acquireToken(clientId, function (err) {
-                            if (!err) {
-                                var user = authContext.getCachedUser(clientId);
-                                buildPage(user.userName);
-                            }
-                            else {
-                                showSignInButton();
-                            }
-                        });
-                    }
-                    else {
-                        if (user.profile.oid !== context.userObjectId) {
-                            authContext.clearCache();
-                            showSignInButton();
-                        }
-                        else {
-                            buildPage(user.userName);
-                        }
-                    }
+                    buildPage(window.localStorage.getItem("username"));
                 });
             });
 
-            function showSignInButton() {
-                $(".loading").hide();
-                $(".button-holder").show();
+
+            //microsoftTeams.getContext(function (context) {
+
+            //    isMsteamsContext = true;
+            //    $.get(window.location.origin + '/api/app').done(function (data) {
+
+
+            //        localStorage.setItem('msTeamsContext', JSON.stringify({ tid: context && context.tid, loginHint: context.loginHint }));
+
+            //var clientId = data.botId;
+            //localStorage.setItem('userClientId', clientId);
+            //var config = {
+            //    redirectUri: "https://" + window.location.host + "/StaticViews/LoginResult.html",
+            //    cacheLocation: "localStorage",
+            //    navigateToLoginRequestUrl: false,
+            //    clientId: clientId,
+            //    tenant: context && context.tid
+            //};
+
+            //if (context.loginHint) {
+            //    config.extraQueryParameter = "scope=openid+profile&login_hint=" + encodeURIComponent(context.loginHint);
+            //} else {
+            //    config.extraQueryParameter = "scope=openid+profile";
+            //}
+
+            //var authContext = new AuthenticationContext(config);
+            //var user = authContext.getCachedUser(clientId);
+            //if (!user) {
+            //    // https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/authentication/auth-silent-aad
+            //    authContext.acquireToken(clientId, function (err) {
+            //        if (!err) {
+            //            var user = authContext.getCachedUser(clientId);
+            //            buildPage(user.userName);
+            //        }
+            //        else {
+            //            showSignInButton();
+            //        }
+            //    });
+            //}
+            //else {
+            //    if (user.profile.oid !== context.userObjectId) {
+            //        authContext.clearCache();
+            //        showSignInButton();
+            //    }
+            //    else {
+
+            //todojack: check with Scott how to get this from the access token....
+
+            //            buildPage(user.userName);
+            //            //}
+            //        });
+            //    });
+            //});
+
+            //function showSignInButton() {
+            //    $(".loading").hide();
+            //    $(".button-holder").show();
+            //}
+
+            //setTimeout(function () {
+            //    if (!isMsteamsContext) {
+            //        var positionId = getQueryStringValue('positionId');
+            //        buildPage(null, positionId);
+            //    }
+            //}, 2000);
+            //});
+
+            function getQueryStringValue(key) {
+                return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
             }
+        };
 
-            setTimeout(function () {
-                if (!isMsteamsContext) {
-                    var positionId = getQueryStringValue('positionId');
-                    buildPage(null, positionId);
-                }
-            }, 2000);
-        });
+        $(this.handlePageLoad);
 
-        function getQueryStringValue(key) {
-            return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-        }
+
     </script>
 </head>
 <body dir="ltr">
