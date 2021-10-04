@@ -188,8 +188,52 @@
 
     <script>
 
-        function loadPage() {
+        async function loadPage() {
             var candidateId = getQueryStringValue('candidateId');
+            let appId = await getApp();
+            let json = await getCandidates(candidateId);
+            getData(json, candidateId, appId);
+        }
+
+            async function getApp() {
+
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + '/api/app', {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    var appId = json.appId;
+                    return appId
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+            async function getCandidates(candidateId) {
+
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + '/api/candidates/' + candidateId, {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    return json
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+
+        function getData(data, candidateId, appId) {
 
             var taskInfo = {
                 url: window.location.origin + '/StaticViews/CandidateFeedback.html?candidateId=' + encodeURIComponent(candidateId),
@@ -197,105 +241,101 @@
                 height: "large"
             };
 
-            //todojack: pass access token when calling client APIs
 
-            $.get(window.location.origin + '/api/app').done(function (data) {
-                var appId = data.appId;
-                $.get(window.location.origin + '/api/candidates/' + candidateId).done(function (data) {
-                    $('#candidate-name').text(data.name);
-                    $('#position-title').text(data.positionTitle);
+            $('#candidate-name').text(data.name);
+            $('#position-title').text(data.positionTitle);
 
-                    taskInfo.title = encodeURIComponent('Feedback for ' + data.name);
+            taskInfo.title = encodeURIComponent('Feedback for ' + data.name);
 
-                    var taskModuleUrl = 'https://teams.microsoft.com/l/task/' + appId + '?url=' + taskInfo.url + '&title=' + taskInfo.title + '&height=' + taskInfo.height + '&width=' + taskInfo.width;
-                    $(".copyToClipboard").click(function () {
-                        $(".tooltiptext").css("visibility", "visible");
-                        setTimeout(function () {
-                            $(".tooltiptext").css("visibility", "hidden");
-                        }, 1500);
-                        copyToClipboard(taskModuleUrl);
-                    });
+            var taskModuleUrl = 'https://teams.microsoft.com/l/task/' + appId + '?url=' + taskInfo.url + '&title=' + taskInfo.title + '&height=' + taskInfo.height + '&width=' + taskInfo.width;
+            $(".copyToClipboard").click(function () {
+                $(".tooltiptext").css("visibility", "visible");
+                setTimeout(function () {
+                    $(".tooltiptext").css("visibility", "hidden");
+                }, 1500);
+                copyToClipboard(taskModuleUrl);
+            });
 
-                    var conductedRecruiters = [];
-                    var upcomingHtml = '';
-                    var conductedHtml = '';
-                    var commentsHtml = '';
-                    if (data.interviews && data.interviews.length > 0) {
-                        data.interviews.forEach(function (i) {
-                            if (i) {
-                                var personImage = buildIconTemplate(i.recruiter);
-                                var interviewDate = new Date(i.interviewDate);
-                                var interviewTemplate = '<div class="ms-Grid-row itemRow small-font-size">'
-                                    + '<div class="ms-sm1 ms-Grid-col">' + personImage + '</div>'
-                                    + '<div class="ms-sm4 ms-Grid-col text-row">' + i.recruiter.name + '</div>'
-                                    + '<div class="ms-sm3 ms-Grid-col text-row">' + (interviewDate.getMonth() + 1) + '/' + interviewDate.getDate() + '/' + interviewDate.getFullYear() + '</div>'
-                                    + '<div class="ms-sm4 ms-Grid-col text-row">' + i.feedbackText + '</div>'
-                                    + '</div>';
-                                if (interviewDate <= Date.now()) {
-                                    conductedHtml += interviewTemplate;
-                                    conductedRecruiters.push(i.recruiter);
-                                }
-                                else {
-                                    upcomingHtml += interviewTemplate;
-                                }
-                            }
-                        });
-                    }
-
-                    if (data.comments && data.comments.length > 0) {
-                        data.comments.forEach(function (c) {
-                            var role = c.authorRole == null ? "" : c.authorRole;
-                            var icon = buildIconTemplate({ name: c.authorName, profilePicture: c.authorProfilePicture });
-                            commentsHtml += '<div class="itemRow">'
-                                + '<div class="itemCell">'
-                                + icon
-                                + '<div class="itemContent">'
-                                + '<div class="itemName small-font-size">' + c.authorName + '</div>'
-                                + '<div class="itemIndex small-font-size">' + role + '</div>'
-                                + '<div class="small-font-size">' + c.text + '</div>'
-                                + '</div>'
-                                + '</div>'
-                                + '</div>';
-                        });
-                    }
-
-                    if (upcomingHtml.length === 0) {
-                        $(".show-upcoming-section").hide();
-                    }
-                    else {
-                        $("#upcoming-label").text('(' + (data.interviews.length - conductedRecruiters.length) + ')');
-                        $("#upcoming-rows").html(upcomingHtml);
-                    }
-
-                    if (conductedHtml.length === 0) {
-                        $(".show-conducted-section").hide();
-                    }
-                    else {
-                        $("#conducted-label").text('(' + conductedRecruiters.length + ')');
-                        $("#conducted-rows").html(conductedHtml);
-                    }
-
-                    if (commentsHtml.length === 0) {
-                        $(".show-comments-section").hide();
-                    }
-                    else {
-                        $(".show-comments-section").show();
-                        $("#comments-label").text('(' + data.comments.length + ')');
-                        $("#comments-rows").html(commentsHtml);
-                    }
-
-                    if (conductedHtml.length === 0 && upcomingHtml.length === 0) {
-                        if (commentsHtml.length === 0) {
-                            $(".show-no-interview-section").show();
+            var conductedRecruiters = [];
+            var upcomingHtml = '';
+            var conductedHtml = '';
+            var commentsHtml = '';
+            if (data.interviews && data.interviews.length > 0) {
+                data.interviews.forEach(function (i) {
+                    if (i) {
+                        var personImage = buildIconTemplate(i.recruiter);
+                        var interviewDate = new Date(i.interviewDate);
+                        var interviewTemplate = '<div class="ms-Grid-row itemRow small-font-size">'
+                            + '<div class="ms-sm1 ms-Grid-col">' + personImage + '</div>'
+                            + '<div class="ms-sm4 ms-Grid-col text-row">' + i.recruiter.name + '</div>'
+                            + '<div class="ms-sm3 ms-Grid-col text-row">' + (interviewDate.getMonth() + 1) + '/' + interviewDate.getDate() + '/' + interviewDate.getFullYear() + '</div>'
+                            + '<div class="ms-sm4 ms-Grid-col text-row">' + i.feedbackText + '</div>'
+                            + '</div>';
+                        if (interviewDate <= Date.now()) {
+                            conductedHtml += interviewTemplate;
+                            conductedRecruiters.push(i.recruiter);
                         }
-                        $("#interviews-conducted").hide();
-                    }
-                    else {
-                        $("#interviews-conducted").text('(' + conductedRecruiters.length + '/' + data.interviews.length + ' interviews conducted)');
+                        else {
+                            upcomingHtml += interviewTemplate;
+                        }
                     }
                 });
-            });
+            }
+
+            if (data.comments && data.comments.length > 0) {
+                data.comments.forEach(function (c) {
+                    var role = c.authorRole == null ? "" : c.authorRole;
+                    var icon = buildIconTemplate({ name: c.authorName, profilePicture: c.authorProfilePicture });
+                    commentsHtml += '<div class="itemRow">'
+                        + '<div class="itemCell">'
+                        + icon
+                        + '<div class="itemContent">'
+                        + '<div class="itemName small-font-size">' + c.authorName + '</div>'
+                        + '<div class="itemIndex small-font-size">' + role + '</div>'
+                        + '<div class="small-font-size">' + c.text + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '</div>';
+                });
+            }
+
+            if (upcomingHtml.length === 0) {
+                $(".show-upcoming-section").hide();
+            }
+            else {
+                $("#upcoming-label").text('(' + (data.interviews.length - conductedRecruiters.length) + ')');
+                $("#upcoming-rows").html(upcomingHtml);
+            }
+
+            if (conductedHtml.length === 0) {
+                $(".show-conducted-section").hide();
+            }
+            else {
+                $("#conducted-label").text('(' + conductedRecruiters.length + ')');
+                $("#conducted-rows").html(conductedHtml);
+            }
+
+            if (commentsHtml.length === 0) {
+                $(".show-comments-section").hide();
+            }
+            else {
+                $(".show-comments-section").show();
+                $("#comments-label").text('(' + data.comments.length + ')');
+                $("#comments-rows").html(commentsHtml);
+            }
+
+            if (conductedHtml.length === 0 && upcomingHtml.length === 0) {
+                if (commentsHtml.length === 0) {
+                    $(".show-no-interview-section").show();
+                }
+                $("#interviews-conducted").hide();
+            }
+            else {
+                $("#interviews-conducted").text('(' + conductedRecruiters.length + '/' + data.interviews.length + ' interviews conducted)');
+            }
         }
+
+
 
 
 

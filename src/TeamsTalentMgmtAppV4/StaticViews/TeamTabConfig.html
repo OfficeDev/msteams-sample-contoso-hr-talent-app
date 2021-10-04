@@ -157,9 +157,7 @@
 
     <script type="text/javascript">
 
-        //todoscott: pass access token when calling client APIs
-
-        function loadPage()
+        async function loadPage()
         {
             microsoftTeams.initialize();
             var nameSelector = $('#tabname');
@@ -207,13 +205,24 @@
                 checkValidityState();
             }
 
-            $.get(window.location.origin + '/api/positions/').done(function (data) {
-                if (data && data.length > 0) {
-                    updateSelectedPosition(data[0].positionId, 'ID ' + data[0].positionExternalId + ' - ' + data[0].title);
-                    positionData = data;
-                    rebuildDropdown();
+            //fetch stuff
+
+            let accessToken = window.localStorage.getItem("userToken");
+            let authorization = "Bearer: " + accessToken;
+            let data = await fetch(window.location.origin + '/api/positions/', {
+                headers: {
+                    Authorization: authorization,
                 }
             });
+
+            if (data.ok) {
+                let json = await data.json();
+                    updateSelectedPosition(json[0].positionId, 'ID ' + json[0].positionExternalId + ' - ' + json[0].title);
+                    positionData = json;
+                    rebuildDropdown();
+            } else {
+                console.error("HTTP-Error: " + data.status);
+            }
 
             //Save handler when user clicked on Save button
             microsoftTeams.initialize();

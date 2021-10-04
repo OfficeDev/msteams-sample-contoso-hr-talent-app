@@ -104,14 +104,14 @@
 
     <script type="text/javascript">
 
-        function loadPage() {
+        async function loadPage() {
             var accessToken = window.localStorage.getItem("userToken");
             getInfoFromToken(accessToken);
-            var activeIndex = 0;
-            var isMsteamsContext = false;
-            var maxActiveIndex;
+            var positionId = getQueryStringValue('positionId');
+            getData(window.localStorage.getItem("username"), positionId);
+        }
 
-            function buildPage(recruiterId, positionId) {
+            async function getData(recruiterId, positionId) {
                 $(".button-holder").hide();
                 $(".loading").show();
                 var apiPath = "/api/positions/open";
@@ -119,7 +119,26 @@
                     apiPath = "/api/recruiters/" + encodeURIComponent(recruiterId.substring(0, recruiterId.lastIndexOf("@"))) + "/positions";
                 }
 
-                $.get(window.location.origin + apiPath).done(function (data) {
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + apiPath, {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    buildPage(json, recruiterId, positionId);
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+        function buildPage(data, recruiterId, positionId) {
+            var activeIndex = 0;
+            var isMsteamsContext = false;
+            var maxActiveIndex;
                     var positionHtml = "";
                     $(".loading").hide();
                     if (recruiterId) {
@@ -224,7 +243,7 @@
                         }
                         clickOnMainBlock($('#main-block-' + newIndex));
                     });
-                });
+                }
 
                 function clickOnMainBlock(currentObject) {
                     var index = currentObject.data("index");
@@ -233,23 +252,12 @@
                         currentObject.addClass("active");
                     }
                     activeIndex = index;
-                };
-            };
-
-
-                //todoscott: pass access token when calls are made to client API controller
-            //todojack:change to fetch?
-                $.get(window.location.origin + '/api/app').done(function (data) {
-                    buildPage(window.localStorage.getItem("username"));
-                });
-
-
+                }
  
 
             function getQueryStringValue(key) {
                 return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
             }
-        };
 
         $(async () => {
             await this.handlePageLoad();

@@ -167,29 +167,42 @@
 
         function loadPage() {
 
-            
-            //todojack: make it so that Teams uses the context info to get the right info, and web uses the query strings to get the right info
-            //positionId value controls what is showed on the page both inside Teams and on the web
-
-            //if in Teams, set positionId from entity data
-
-            //if outside Teams, set position ID from URL query string
             let isTeams = window.localStorage.getItem("isTeams");
-            console.log("source is: " + isTeams);
+            window.localStorage.removeItem("isTeams");
             if (!isTeams) {
-                //do the stuff required outside of Teams
+                var urlParams = new URLSearchParams(location.search);
+                var positionId = urlParams.get('positionId');
+                buildPage(positionId);
             }
             else {
-                //do the stuff required inside of Teams
+                microsoftTeams.getContext(function (context) {
+                    var positionId = context.entityId;
+                    buildPage(positionId);
+                });
             }
-            //microsoftTeams.getContext(function (context) {
-                var positionId = 2;
-                buildPage(positionId);
-            //});
+        }
 
-            function buildPage(positionId) {
-                //todojack:add headers for auth (change to Fetch)
-                $.get(window.location.origin + '/api/positions/' + positionId).done(function (data) {
+            async function buildPage(positionId) {
+
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + '/api/positions/' + positionId, {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    getData(json);
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+                function getData(data) {
+
+
                     $("#job-title").text(data.title);
                     $("#job-id").text(data.positionExternalId);
                     $("#hiring-manager").text(data.hiringManager.name);
@@ -258,10 +271,7 @@
                     else {
                         $(".show-hr-section").hide();
                     }
-                });
-            }
-
-        }
+                }
 
 
 

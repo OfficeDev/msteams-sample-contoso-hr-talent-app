@@ -1,6 +1,7 @@
 ﻿handlePageLoad = async () => {
 
     try {
+        window.localStorage.removeItem("isTeams");
         await this.initialiseTeams();
         this.inTeams = true;
     }
