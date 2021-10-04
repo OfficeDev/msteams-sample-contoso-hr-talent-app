@@ -4,7 +4,11 @@
     <title>Candidate Feedback</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
 
@@ -183,7 +187,8 @@
     </style>
 
     <script>
-        $(document).ready(function () {
+
+        function loadPage() {
             var candidateId = getQueryStringValue('candidateId');
 
             var taskInfo = {
@@ -192,8 +197,7 @@
                 height: "large"
             };
 
-            //todojack: add SSO inside Teams
-        //todoscott: pass access token when calling client APIs
+            //todojack: pass access token when calling client APIs
 
             $.get(window.location.origin + '/api/app').done(function (data) {
                 var appId = data.appId;
@@ -291,7 +295,9 @@
                     }
                 });
             });
-        });
+        }
+
+
 
         function buildIconTemplate(person) {
             if (person.profilePicture == null) {
@@ -316,6 +322,12 @@
         function getQueryStringValue(key) {
             return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
         }
+
+        $(async () => {
+            await this.handlePageLoad();
+            this.loadPage();
+        })
+
     </script>
 </head>
 <body>

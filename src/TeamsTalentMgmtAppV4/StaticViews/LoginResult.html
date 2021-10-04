@@ -7,8 +7,6 @@
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
     <script src="https://statics.teams.microsoft.com/sdk/v1.5.2/js/MicrosoftTeams.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <!--<script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
-    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal.min.js" integrity="sha384-BIOS/65fbAsb2XiCCSTlZSTTl0ZgqkOU522dpyk5meOnN2EOQ3uH+QpqEtoAtmBn" crossorigin="anonymous"></script>-->
 
     <style rel="stylesheet">
         [lang|=en], body {
@@ -55,7 +53,7 @@
     <script type="text/javascript">
 
 
-        //this is where the user will land once they have done an Azure AD sign-in, if the fallback method for SSO is used
+        //this is where the user will land once they have done an Azure AD sign-in, assuming Teams SSO was unsuccessful...
 
         initialiseTeams = () => {
             let rejectPromise = null;
@@ -80,11 +78,11 @@
         }
 
 
-        //similar to Auth-Start options/parameters, but we need to define navigateToLoginRequestUrl: false or it sends us back to Auth-Start, which we do not want in this sample app.
+        //similar to Auth-Start options/parameters, but we need to define navigateToLoginRequestUrl: false or it sends us back to login.html, which we do not want in this sample app.
         const msalConfig = {
             auth: {
                 clientId: "253f51df-b6b5-4792-8347-90883f76a10a",
-                redirectUri: location.protocol + "//" + location.hostname + ":" + location.port + "/StaticViews/LoginResult.html",
+                redirectUri: window.location.origin + "/StaticViews/LoginResult.html",
                 navigateToLoginRequestUrl: false
             }
         };
@@ -95,7 +93,7 @@
         //this function handles the RedirectPromise and provides us with an Access Token
 
 
-        handlePageLoad = async () => {
+        handleLoginPageLoad = async () => {
 
             clientApp.handleRedirectPromise().then((response) => {
                 window.localStorage.setItem("userToken", response.accessToken);
@@ -125,79 +123,11 @@
             }
         };
 
-        $(this.handlePageLoad);
+        $(this.handleLoginPageLoad);
 
 
 
-        //end of improvements
-
-        //microsoftTeams.initialize(function () {
-        //    var clientId = getLocalStorageData('userClientId');
-
-        //    if (!clientId) {
-        //        displayError();
-        //    }
-        //    else {
-        //        var config = {
-        //            redirectUri: "https://" + window.location.host + "/StaticViews/LoginResult.html",
-        //            cacheLocation: "localStorage",
-        //            navigateToLoginRequestUrl: false,
-        //            clientId: clientId
-        //        };
-
-        //        var authContext = new AuthenticationContext(config);
-
-        //        if (authContext.isCallback(window.location.hash)) {
-        //            authContext.handleWindowCallback(window.location.hash);
-        //        }
-
-        //        var user = authContext.getCachedUser();
-        //        if (!user) {
-        //            displayError();
-        //        }
-        //        else {
-        //            displaySuccess(user.userName);
-        //        }
-        //    }
-        //});
-
-        //function getLocalStorageData(key) {
-        //    var result = window.localStorage.getItem(key);
-        //    if (!result && window.opener) {
-        //        result = window.opener.localStorage.getItem(key);
-        //        window.localStorage.setItem(key, result);
-        //    }
-
-        //    return result;
-        //}
-
-        //function displaySuccess(userName) {
-        //    document.getElementById('content')
-        //        .innerHTML =
-        //        '<h2>Authentication Successful</h2>' +
-        //        '<p>Microsoft Teams has been successfully authenticated. You may now close this page.</p>';
-
-        //    try {
-        //        microsoftTeams.authentication.notifySuccess(userName);
-        //    } catch (e) {
-        //        console.log('LoginResult::Notify success error: ', e);
-        //    }
-        //}
-
-        //function displayError() {
-        //    var error = localStorage.getItem('adal.login.error') || localStorage.getItem('adal.error');
-
-        //    document.getElementById('content')
-        //        .innerHTML =
-        //        '<h2>' + (error || 'Error occured') + '</h2>' +
-        //        '<p>' + (localStorage.getItem('adal.error.description') || 'Error while authorization') + '</p>';
-
-        //    window.onbeforeunload = function () {
-        //        if (error) {
-        //            microsoftTeams.authentication.notifyFailure(error);
-        //        }
-        //    }
-        //}
+       
     </script>
 </body>
 </html>

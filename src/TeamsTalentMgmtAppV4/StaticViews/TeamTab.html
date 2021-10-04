@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
 
@@ -162,20 +165,30 @@
 
     <script type="text/javascript">
 
+        function loadPage() {
 
-        microsoftTeams.initialize();
+            
+            //todojack: make it so that Teams uses the context info to get the right info, and web uses the query strings to get the right info
+            //positionId value controls what is showed on the page both inside Teams and on the web
 
+            //if in Teams, set positionId from entity data
 
-        //todojack: add SSO inside Teams
-        //todoscott: pass access token when calling client APIs
-        $(document).ready(function () {
-            microsoftTeams.getContext(function (context) {
-                var positionId = 1;
+            //if outside Teams, set position ID from URL query string
+            let isTeams = window.localStorage.getItem("isTeams");
+            console.log("source is: " + isTeams);
+            if (!isTeams) {
+                //do the stuff required outside of Teams
+            }
+            else {
+                //do the stuff required inside of Teams
+            }
+            //microsoftTeams.getContext(function (context) {
+                var positionId = 2;
                 buildPage(positionId);
-            });
+            //});
 
             function buildPage(positionId) {
-                //todoscott:add headers for auth
+                //todojack:add headers for auth (change to Fetch)
                 $.get(window.location.origin + '/api/positions/' + positionId).done(function (data) {
                     $("#job-title").text(data.title);
                     $("#job-id").text(data.positionExternalId);
@@ -247,7 +260,10 @@
                     }
                 });
             }
-        });
+
+        }
+
+
 
         function buildIconTemplate(person, addName, centerImage) {
             var nameAddition = "";
@@ -279,6 +295,12 @@
                 height: "large"
             });
         }
+
+        $(async () => {
+            await this.handlePageLoad();
+            this.loadPage();
+        })
+
     </script>
 </head>
 <body dir="ltr">

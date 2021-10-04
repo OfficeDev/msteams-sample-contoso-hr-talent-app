@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
 
     <style type="text/css">
@@ -153,16 +156,18 @@
     </div>
 
     <script type="text/javascript">
-        //todojack: add SSO inside Teams
+
         //todoscott: pass access token when calling client APIs
-        var nameSelector = $('#tabname');
-        var currentSelectedPositionId = 0;
-        var positionData;
 
-        microsoftTeams.initialize();
-        function closeAllDropdowns() { $("#positionsDropdownContent").hide(); }
+        function loadPage()
+        {
+            microsoftTeams.initialize();
+            var nameSelector = $('#tabname');
+            var currentSelectedPositionId = 0;
+            var positionData;
 
-        $(document).ready(function () {
+            function closeAllDropdowns() { $("#positionsDropdownContent").hide(); }
+
             function checkValidityState() {
                 microsoftTeams.settings.setValidityState(nameSelector.val().length !== 0 && currentSelectedPositionId > 0);
             }
@@ -181,10 +186,10 @@
 
             function rebuildDropdown() {
                 var html = "";
-                positionData.forEach(function(d) {
+                positionData.forEach(function (d) {
                     if (d.positionId !== currentSelectedPositionId) {
                         var positionName = 'ID ' + d.positionExternalId + ' - ' + d.title;
-                        html += '<span class="change-position-btn" data-position-id="' + d.positionId + '" data-position-name="' + positionName +'">' + positionName + '</span>';
+                        html += '<span class="change-position-btn" data-position-id="' + d.positionId + '" data-position-name="' + positionName + '">' + positionName + '</span>';
                     }
                 });
                 $("#positionsDropdownContent").html(html);
@@ -209,25 +214,41 @@
                     rebuildDropdown();
                 }
             });
-        });
 
-        //Save handler when user clicked on Save button
-        microsoftTeams.settings.registerOnSaveHandler(function (saveEvent) {
-            microsoftTeams.getContext(function () {
-                var name = nameSelector.val();
-                var url = window.location.origin + '/StaticViews/TeamTab.html?positionId=' + currentSelectedPositionId;
-                var websiteUrl = url + '&web=1';
+            //Save handler when user clicked on Save button
+            microsoftTeams.initialize();
+            microsoftTeams.settings.registerOnSaveHandler(function (saveEvent) {
 
-                microsoftTeams.settings.setSettings({
-                    entityId: currentSelectedPositionId,
-                    contentUrl: url,
-                    suggestedDisplayName: name,
-                    websiteUrl: websiteUrl
+                microsoftTeams.getContext(function () {
+                    var name = nameSelector.val();
+                    var url = window.location.origin + '/StaticViews/TeamTab.html?positionId=' + currentSelectedPositionId;
+                    var websiteUrl = url + '&web=1';
+
+                    console.log(nameSelector.val);
+                    console.log(url);
+                    console.log(websiteUrl);
+
+
+                    microsoftTeams.settings.setSettings({
+                        entityId: currentSelectedPositionId,
+                        contentUrl: url,
+                        suggestedDisplayName: name,
+                        websiteUrl: websiteUrl
+                    });
+
+                    saveEvent.notifySuccess();
                 });
-
-                saveEvent.notifySuccess();
             });
-        });
+
+        }
+
+        $(async () => {
+            await this.handlePageLoad();
+            this.loadPage();
+        })
+
+
+
 
     </script>
 </body>
