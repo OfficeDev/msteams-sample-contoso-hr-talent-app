@@ -39,7 +39,7 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             object options = null,
             CancellationToken cancellationToken = default)
         {
-            var text = dc.Context.GetTextWithoutCommand(BotCommands.TopCandidatesDialogCommand);
+            var text = dc.Context.Activity.GetTextWithoutCommand(BotCommands.TopCandidatesDialogCommand);
             var positions = await _positionService.Search(text, 15, cancellationToken);
 
             if (positions.Count == 1)

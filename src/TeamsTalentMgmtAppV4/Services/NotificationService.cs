@@ -189,7 +189,7 @@ namespace TeamsTalentMgmtAppV4.Services
             ConversationData conversationData,
             CancellationToken cancellationToken)
         {
-            MicrosoftAppCredentials.TrustServiceUrl(conversationData.ServiceUrl);
+            // MicrosoftAppCredentials.TrustServiceUrl(conversationData.ServiceUrl);
             using (var client = new ConnectorClient(
                 new Uri(conversationData.ServiceUrl),
                 new MicrosoftAppCredentials(_appSettings.MicrosoftAppId, _appSettings.MicrosoftAppPassword)))

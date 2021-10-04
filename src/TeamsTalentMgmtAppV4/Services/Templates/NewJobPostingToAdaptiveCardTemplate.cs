@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.TemplateManager;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
+using TeamsTalentMgmtAppV4.Extensions;
 using TeamTalentMgmtApp.Shared.Constants;
 using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 
@@ -48,7 +49,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 
             action.RepresentAsBotBuilderAction(wrapAction);
 
-            var card = new AdaptiveCard
+            var card = new AdaptiveCard(new AdaptiveSchemaVersion("1.3"))
             {
                 Version = "1.0",
                 Body = new List<AdaptiveElement>
@@ -172,7 +173,11 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
                 }
             };
 
-            return MessageFactory.Attachment(card.ToAttachment());
+            return MessageFactory.Attachment(new Attachment
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            });
         }
     }
 }

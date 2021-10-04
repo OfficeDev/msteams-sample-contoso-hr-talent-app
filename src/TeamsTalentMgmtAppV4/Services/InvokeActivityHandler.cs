@@ -19,6 +19,7 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TeamsTalentMgmtAppV4.Extensions;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Models.TemplateModels;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
@@ -71,7 +72,7 @@ namespace TeamsTalentMgmtAppV4.Services
             _mapper = mapper;
         }
 
-        public async Task<InvokeResponse> HandleMessagingExtensionQueryAsync(
+        public async Task<MessagingExtensionResponse> HandleMessagingExtensionQueryAsync(
             ITurnContext turnContext,
             MessagingExtensionQuery query,
             CancellationToken cancellationToken)
@@ -128,14 +129,19 @@ namespace TeamsTalentMgmtAppV4.Services
                     break;
             }
 
-            return _mapper.Map<MessagingExtensionAttachment[], InvokeResponse>(attachments.ToArray());
+            return new MessagingExtensionResponse
+            {
+                ComposeExtension =
+                {
+                    Attachments = attachments
+                }
+            };
         }
 
-        public async Task<InvokeResponse> HandleMessagingExtensionFetchTaskAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        public async Task<MessagingExtensionActionResponse> HandleMessagingExtensionFetchTaskAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
         {
-            var composeExtensionQuery = turnContext.TurnState.Get<ITeamsContext>().GetMessagingExtensionActionData();
             MessagingExtensionActionResponse response = null;
-            if (string.Equals(composeExtensionQuery?.CommandId, MessagingExtensionCommands.OpenNewPosition, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(action.CommandId, MessagingExtensionCommands.OpenNewPosition, StringComparison.OrdinalIgnoreCase))
             {
                 var locations = await _locationService.GetAllLocations(cancellationToken);
                 var hiringManagers = await _recruiterService.GetAllHiringManagers(cancellationToken);
@@ -163,37 +169,36 @@ namespace TeamsTalentMgmtAppV4.Services
                 };
             }
 
-            return _mapper.Map<MessagingExtensionActionResponse, InvokeResponse>(response);
+            return response;
         }
 
-        public async Task<InvokeResponse> HandleMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        public async Task<MessagingExtensionActionResponse> HandleMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
         {
-            var submitActionData = turnContext.TurnState.Get<ITeamsContext>().GetMessagingExtensionActionData();
-            var positionCreateCommand = JObject.FromObject(submitActionData?.Data).ToObject<PositionCreateCommand>();
-            var response = new InvokeResponse { Status = (int)HttpStatusCode.OK };
+            var positionCreateCommand = JObject.FromObject(action.Data).ToObject<PositionCreateCommand>();
             if (positionCreateCommand is null)
             {
-                return response;
+                return new MessagingExtensionActionResponse();
             }
 
             switch (positionCreateCommand.CommandId)
             {
                 // Open task module confirming job posting
                 case AppCommands.OpenNewPosition:
-                    response = await CreateConfirmJobPostingTaskModuleResponse(turnContext, positionCreateCommand, cancellationToken);
-                    break;
+                    return await CreateConfirmJobPostingTaskModuleResponse(turnContext, positionCreateCommand, cancellationToken);
 
                 // Insert card confirming the action
                 case AppCommands.ConfirmCreationOfNewPosition:
-                    response = await PositionMessagingExtensionResponse(turnContext, positionCreateCommand.PositionId);
-                    break;
+                    return _mapper.Map<MessagingExtensionActionResponse>(await PositionMessagingExtensionResponse(turnContext, positionCreateCommand.PositionId));
             }
 
-            return response;
+            return new MessagingExtensionActionResponse();
         }
 
-        public async Task<InvokeResponse> HandleMessagingExtensionOnCardButtonClickedAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        public Task HandleMessagingExtensionOnCardButtonClickedAsync(ITurnContext<IInvokeActivity> turnContext, JObject cardData, CancellationToken cancellationToken)
         {
+            throw new NotImplementedException("Need to implement this... what's in cardData?");
+
+            /*
             var data = turnContext.TurnState.Get<ITeamsContext>().GetMessagingExtensionQueryData();
             switch (data.CommandId)
             {
@@ -208,9 +213,11 @@ namespace TeamsTalentMgmtAppV4.Services
             }
 
             return new InvokeResponse { Status = (int)HttpStatusCode.OK };
+            */
         }
 
-        public async Task<InvokeResponse> HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, SigninStateVerificationQuery query, CancellationToken cancellationToken)
+        /*
+        public async Task HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
         {
             var connectionName = _appSettings.OAuthConnectionName;
             var token = await ((IUserTokenProvider)turnContext.Adapter).GetUserTokenAsync(
@@ -225,25 +232,25 @@ namespace TeamsTalentMgmtAppV4.Services
 
             return new InvokeResponse { Status = (int)HttpStatusCode.OK };
         }
+        */
 
-        public async Task<InvokeResponse> HandleAppBasedLinkQueryAsync(
+        public async Task<MessagingExtensionResponse> HandleAppBasedLinkQueryAsync(
             ITurnContext<IInvokeActivity> turnContext,
             AppBasedLinkQuery query,
             CancellationToken cancellationToken)
         {
             var url = query?.Url?.Trim() ?? string.Empty;
 
-            var result = new InvokeResponse { Status = (int)HttpStatusCode.OK };
             if (url.Contains("OpenPositionsPersonalTab"))
             {
                 var positionIdParam = HttpUtility.ParseQueryString(new Uri(url).Query).Get("positionId");
                 if (int.TryParse(positionIdParam, out var positionId))
                 {
-                    result = await PositionMessagingExtensionResponse(turnContext, positionId);
+                    return await PositionMessagingExtensionResponse(turnContext, positionId);
                 }
             }
 
-            return result;
+            return new MessagingExtensionResponse();
         }
 
         public async Task<InvokeResponse> HandleFileConsentDeclineResponse(ITurnContext<IInvokeActivity> turnContext, FileConsentCardResponse fileConsentCardResponse, CancellationToken cancellationToken = default)
@@ -302,7 +309,15 @@ namespace TeamsTalentMgmtAppV4.Services
                     UniqueId = fileConsentCardResponse.UploadInfo.UniqueId
                 };
 
-                reply = MessageFactory.Attachment(fileInfoCard.ToAttachment(fileConsentCardResponse.UploadInfo.Name, fileConsentCardResponse.UploadInfo.ContentUrl));
+                var attachment = new Attachment
+                {
+                    ContentType = FileInfoCard.ContentType,
+                    Content = fileInfoCard,
+                    Name = fileConsentCardResponse.UploadInfo.Name,
+                    ContentUrl = fileConsentCardResponse.UploadInfo.ContentUrl
+                };
+
+                reply = MessageFactory.Attachment(attachment);
             }
             catch (Exception ex)
             {
@@ -313,15 +328,12 @@ namespace TeamsTalentMgmtAppV4.Services
             return consentAcceptResponse;
         }
 
-        private async Task<InvokeResponse> PositionMessagingExtensionResponse(ITurnContext<IInvokeActivity> turnContext, int positionId)
+        private async Task<MessagingExtensionResponse> PositionMessagingExtensionResponse(ITurnContext<IInvokeActivity> turnContext, int positionId)
         {
             var position = await _positionService.GetById(positionId);
             if (position == null)
             {
-                return new InvokeResponse
-                {
-                    Status = (int)HttpStatusCode.OK
-                };
+                return new MessagingExtensionResponse();
             }
 
             var positionsTemplate = new PositionTemplateModel
@@ -333,11 +345,10 @@ namespace TeamsTalentMgmtAppV4.Services
             var previewCard = await _positionsTemplate.RenderTemplate(turnContext, null, TemplateConstants.PositionAsThumbnailCardWithMultipleItems, positionsTemplate);
 
             var attachment = mainCard.Attachments.First().ToMessagingExtensionAttachment(previewCard.Attachments.First());
-            var messagingExtensionResponse = _mapper.Map<MessagingExtensionAttachment[], MessagingExtensionResponse>(new[] { attachment });
-            return _mapper.Map<MessagingExtensionResponse, InvokeResponse>(messagingExtensionResponse);
+            return _mapper.Map<MessagingExtensionAttachment[], MessagingExtensionResponse>(new[] { attachment });
         }
 
-        private async Task<InvokeResponse> CreateConfirmJobPostingTaskModuleResponse(ITurnContext turnContext, PositionCreateCommand positionCreateCommand, CancellationToken cancellationToken)
+        private async Task<MessagingExtensionActionResponse> CreateConfirmJobPostingTaskModuleResponse(ITurnContext turnContext, PositionCreateCommand positionCreateCommand, CancellationToken cancellationToken)
         {
             var position = await _positionService.AddNewPosition(positionCreateCommand, cancellationToken);
 
@@ -363,7 +374,7 @@ namespace TeamsTalentMgmtAppV4.Services
 
             var messageActivity = await _positionsTemplate.RenderTemplate(turnContext, null, TemplateConstants.PositionAsAdaptiveCardWithMultipleItems, positionsTemplate);
 
-            var actionResponse = new MessagingExtensionActionResponse
+            return new MessagingExtensionActionResponse
             {
                 Task = new TaskModuleContinueResponse
                 {
@@ -377,8 +388,6 @@ namespace TeamsTalentMgmtAppV4.Services
                     }
                 }
             };
-
-            return _mapper.Map<MessagingExtensionActionResponse, InvokeResponse>(actionResponse);
         }
 
         private static string GetQueryParameterByName(MessagingExtensionQuery query, string name)

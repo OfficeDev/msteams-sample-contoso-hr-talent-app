@@ -36,6 +36,12 @@ namespace TeamsTalentMgmtAppV4.Infrastructure
                     }
                 });
 
+            CreateMap<MessagingExtensionResponse, MessagingExtensionActionResponse>()
+                .ConstructUsing(src => new MessagingExtensionActionResponse
+                {
+                    ComposeExtension = src.ComposeExtension
+                });
+
             CreateMap<MessagingExtensionActionResponse, InvokeResponse>()
                 .ConstructUsing(src => new InvokeResponse { Body = src, Status = (int)HttpStatusCode.OK });
 

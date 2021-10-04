@@ -36,7 +36,7 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             object options = null,
             CancellationToken cancellationToken = default)
         {
-            var text = dc.Context.GetTextWithoutCommand(BotCommands.CandidateDetailsDialogCommand);
+            var text = dc.Context.Activity.GetTextWithoutCommand(BotCommands.CandidateDetailsDialogCommand);
             var candidates = await _candidateService.Search(text, 15, cancellationToken);
             var interviewers = await _recruiterService.GetAllInterviewers(cancellationToken);
 

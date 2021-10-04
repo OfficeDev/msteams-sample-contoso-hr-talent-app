@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Builder.Teams.Middlewares;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace TeamsTalentMgmtAppV4.Bot
@@ -12,7 +12,7 @@ namespace TeamsTalentMgmtAppV4.Bot
     public class TeamsBotHttpAdapter : BotFrameworkHttpAdapter
     {
         public TeamsBotHttpAdapter(
-                    IHostingEnvironment env,
+                    IWebHostEnvironment env,
                     ICredentialProvider credentialProvider,
                     IConfiguration configuration,
                     ILogger<TeamsBotHttpAdapter> logger,
@@ -48,7 +48,6 @@ namespace TeamsTalentMgmtAppV4.Bot
 
             Use(new TelemetryLoggerMiddleware(botTelemetryClient));
             Use(new ShowTypingMiddleware());
-            Use(new TeamsMiddleware(credentialProvider));
         }
     }
 }

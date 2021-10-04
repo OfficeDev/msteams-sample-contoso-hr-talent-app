@@ -4,12 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Solutions.Dialogs;
-using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using TeamsTalentMgmtAppV4.Extensions;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
 using TeamTalentMgmtApp.Shared.Constants;
@@ -17,10 +16,12 @@ using TeamTalentMgmtApp.Shared.Models.Commands;
 
 namespace TeamsTalentMgmtAppV4.Bot.Dialogs
 {
-    public class MainDialog : RouterDialog
+    public class MainDialog : ComponentDialog
     {
         private readonly IBotService _botService;
         private readonly AppSettings _appSettings;
+
+        private readonly List<(string CommandName, string DialogName, bool AuthorizationIsNeeded)> _commandDialogs;
 
         public MainDialog(
             CandidateDetailsDialog candidateDetailsDialog,
@@ -36,7 +37,7 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             IBotService botService,
             IOptions<AppSettings> appSettings,
             IBotTelemetryClient botTelemetryClient)
-            : base(nameof(MainDialog), botTelemetryClient)
+            : base(nameof(MainDialog))
         {
             _botService = botService;
             _appSettings = appSettings.Value;
@@ -51,24 +52,8 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             AddDialog(newTeamDialog);
             AddDialog(topCandidatesDialog);
             AddDialog(installBotDialog);
-            AddDialog(new OAuthPrompt(nameof(OAuthPrompt), new OAuthPromptSettings
-            {
-                ConnectionName = _appSettings.OAuthConnectionName,
-                Text = "Please sign in to proceed.",
-                Title = "Sign In",
-                Timeout = 9000
-            }));
-        }
 
-        protected override async Task RouteAsync(
-            DialogContext innerDc,
-            CancellationToken cancellationToken = default)
-        {
-            var activityText = innerDc.Context.TurnState
-                .Get<ITeamsContext>()
-                .GetActivityTextWithoutMentions()?.Trim() ?? string.Empty;
-
-            List<(string CommandName, string DialogName, bool AuthorizationIsNeeded)> commandDialogs = new List<(string, string, bool)>
+            _commandDialogs = new List<(string, string, bool)>
             {
                 (BotCommands.HelpDialogCommand, nameof(HelpDialog), false),
                 (BotCommands.SignOutDialogCommand, nameof(SignOutDialog), false),
@@ -81,78 +66,89 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
                 (BotCommands.NewTeamDialog, nameof(NewTeamDialog), true),
                 (BotCommands.InstallBotDialogCommand, nameof(InstallBotDialog), true)
             };
-
-            var sentAnswer = false;
-            foreach (var commandDialog in commandDialogs)
-            {
-                var isFit = Regex.IsMatch(
-                    activityText,
-                    $@"^(.*){commandDialog.CommandName}(.*)$",
-                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                if (isFit && !sentAnswer)
-                {
-                    var dialogName = commandDialog.DialogName;
-                    if (commandDialog.AuthorizationIsNeeded)
-                    {
-                        var connectionName = _appSettings.OAuthConnectionName;
-                        var token = await ((IUserTokenProvider)innerDc.Context.Adapter)
-                            .GetUserTokenAsync(innerDc.Context, connectionName, null, cancellationToken);
-
-                        if (string.IsNullOrEmpty(token?.Token))
-                        {
-                            dialogName = nameof(OAuthPrompt);
-                        }
-                    }
-
-                    await innerDc.BeginDialogAsync(dialogName, cancellationToken: cancellationToken);
-                    sentAnswer = true;
-                }
-            }
-
-            if (!sentAnswer)
-            {
-                var message = $"Sorry, I didn't understand '{activityText}'. Type {BotCommands.HelpDialogCommand} to explore commands.";
-                await innerDc.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
-            }
         }
 
-        protected override async Task OnEventAsync(DialogContext innerDc, CancellationToken cancellationToken = default)
+        public override async Task<bool> OnDialogEventAsync(DialogContext dc, DialogEvent e, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(innerDc.Context.Activity.Name) &&
-                   string.IsNullOrEmpty(innerDc.Context.Activity.Text) &&
-                   innerDc.Context.Activity.Value != null)
+            if (string.IsNullOrEmpty(dc.Context.Activity.Name) &&
+                   string.IsNullOrEmpty(dc.Context.Activity.Text) &&
+                   dc.Context.Activity.Value != null)
             {
-                var command = JsonConvert.DeserializeObject<ActionCommandBase>(innerDc.Context.Activity.Value.ToString());
+                var command = JsonConvert.DeserializeObject<ActionCommandBase>(dc.Context.Activity.Value.ToString());
                 if (string.IsNullOrEmpty(command?.CommandId))
                 {
-                    return;
+                    return false;
                 }
 
                 IMessageActivity message = null;
                 switch (command.CommandId)
                 {
                     case AppCommands.OpenNewPosition:
-                        message = await _botService.OpenPositionAsync(innerDc.Context, cancellationToken);
+                        message = await _botService.OpenPositionAsync(dc.Context, cancellationToken);
                         break;
 
                     case AppCommands.LeaveInternalComment:
-                        message = await _botService.LeaveInternalCommentAsync(innerDc.Context, cancellationToken);
+                        message = await _botService.LeaveInternalCommentAsync(dc.Context, cancellationToken);
                         break;
 
                     case AppCommands.ScheduleInterview:
-                        message = await _botService.ScheduleInterviewAsync(innerDc.Context, cancellationToken);
+                        message = await _botService.ScheduleInterviewAsync(dc.Context, cancellationToken);
                         break;
                 }
 
                 if (message != null)
                 {
-                    await innerDc.Context.TurnState.Get<IConnectorClient>().Conversations.UpdateActivityWithHttpMessagesAsync(
-                        innerDc.Context.Activity.Conversation.Id,
-                        innerDc.Context.Activity.ReplyToId,
+                    await dc.Context.TurnState.Get<IConnectorClient>().Conversations.UpdateActivityWithHttpMessagesAsync(
+                        dc.Context.Activity.Conversation.Id,
+                        dc.Context.Activity.ReplyToId,
                         (Activity)message,
                         cancellationToken: cancellationToken);
                 }
             }
+
+            return true;
+        }
+
+        protected override async Task<DialogTurnResult> OnBeginDialogAsync(DialogContext innerDc, object options, CancellationToken cancellationToken = default)
+        {
+            var activity = innerDc.Context.Activity;
+
+            if (activity.Type == ActivityTypes.Message && !string.IsNullOrEmpty(activity.Text))
+            {
+                var didRoute = await RouteAsync(innerDc, cancellationToken);
+                if (!didRoute)
+                {
+                    var message = $"Sorry, I didn't understand '{activity.Text}'. Type {BotCommands.HelpDialogCommand} to explore commands.";
+                    await innerDc.Context.SendActivityAsync(message, cancellationToken: cancellationToken);
+                }
+            }
+
+            return EndOfTurn;
+        }
+
+        protected async Task<bool> RouteAsync(
+            DialogContext innerDc,
+            CancellationToken cancellationToken = default)
+        {
+            var activityText = innerDc.Context.Activity.GetActivityTextWithoutMentions()?.Trim() ?? string.Empty;
+
+            var foundDialog = false;
+            foreach (var commandDialog in _commandDialogs)
+            {
+                var isFit = Regex.IsMatch(
+                    activityText,
+                    $@"^(.*){commandDialog.CommandName}(.*)$",
+                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                if (isFit && !foundDialog)
+                {
+                    var dialogName = commandDialog.DialogName;
+
+                    await innerDc.BeginDialogAsync(dialogName, cancellationToken: cancellationToken);
+                    foundDialog = true;
+                }
+            }
+
+            return foundDialog;
         }
     }
 }

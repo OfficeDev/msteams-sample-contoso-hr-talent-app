@@ -30,7 +30,7 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             object options = null,
             CancellationToken cancellationToken = default)
         {
-            var text = dc.Context.GetTextWithoutCommand(BotCommands.PositionsDetailsDialogCommand);
+            var text = dc.Context.Activity.GetTextWithoutCommand(BotCommands.PositionsDetailsDialogCommand);
             var positions = new List<Position>();
             if (!string.IsNullOrEmpty(text))
             {

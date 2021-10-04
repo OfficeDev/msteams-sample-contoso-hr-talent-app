@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -60,45 +61,42 @@ namespace TeamsTalentMgmtAppV4.Services
 
         public async Task HandleMembersAddedAsync(
             ITurnContext<IConversationUpdateActivity> turnContext,
+            IList<ChannelAccount> membersAdded,
             CancellationToken cancellationToken)
         {
-            if (turnContext.Activity?.MembersAdded != null)
+            if (turnContext.Activity.MembersAdded.All(m => m.Id != turnContext.Activity.Recipient?.Id))
             {
-                var teamsContext = turnContext.TurnState.Get<ITeamsContext>();
-                var channelAccounts = await turnContext.TurnState.Get<IConnectorClient>().Conversations.GetConversationMembersAsync(turnContext.Activity.Conversation.Id, cancellationToken);
-
-                if (turnContext.Activity.MembersAdded.All(m => m.Id != turnContext.Activity.Recipient?.Id))
-                {
-                    // Bot was added before so grab information about new members.
-                    channelAccounts = channelAccounts.Where(ca => turnContext.Activity.MembersAdded.Any(member => member.Id == ca.Id)).ToList();
-                }
-                else
-                {
-                    if (turnContext.Activity.Conversation.IsGroup != true)
-                    {
-                        var card = new HeroCard
-                        {
-                            Title = "Hi, I'm Talent bot!",
-                            Text = "I can assist you with creating new job postings, get details about your candidates, open positions and notify about your candidates stage updates. If you are admin, you can install bot for hiring managers.",
-                            Buttons = new List<CardAction>
-                            {
-                                new CardAction(ActionTypes.ImBack, value: BotCommands.InstallBotDialogCommand, title: "Install bot for hiring managers"),
-                                new CardAction(ActionTypes.ImBack, value: BotCommands.HelpDialogCommand, title: "Help")
-                            }
-                        };
-
-                        await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
-                    }
-                }
-
-                await _recruiterService.SaveConversationData(
-                    turnContext.Activity.ServiceUrl,
-                    teamsContext.Tenant?.Id,
-                    channelAccounts
-                    .Select(member => teamsContext.AsTeamsChannelAccount(member))
-                    .ToDictionary(channelAccount => channelAccount.Id, channelAccount => channelAccount.Email),
-                    cancellationToken);
+                // Bot was added before so grab information about new members.
+                membersAdded = membersAdded.Where(ca => turnContext.Activity.MembersAdded.Any(member => member.Id == ca.Id)).ToList();
             }
+            else
+            {
+                if (turnContext.Activity.Conversation.IsGroup != true)
+                {
+                    var card = new HeroCard
+                    {
+                        Title = "Hi, I'm Talent bot!",
+                        Text = "I can assist you with creating new job postings, get details about your candidates, open positions and notify about your candidates stage updates. If you are admin, you can install bot for hiring managers.",
+                        Buttons = new List<CardAction>
+                        {
+                            new CardAction(ActionTypes.ImBack, value: BotCommands.InstallBotDialogCommand, title: "Install bot for hiring managers"),
+                            new CardAction(ActionTypes.ImBack, value: BotCommands.HelpDialogCommand, title: "Help")
+                        }
+                    };
+
+                    await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
+                }
+            }
+
+            throw new NotImplementedException("Find out how to get tenant id here");
+
+            /*
+            await _recruiterService.SaveConversationData(
+                turnContext.Activity.ServiceUrl,
+                tenantId,
+                membersAdded.ToDictionary(channelAccount => channelAccount.Id, channelAccount => channelAccount.Name),
+                cancellationToken);
+            */
         }
 
         public async Task<IMessageActivity> LeaveInternalCommentAsync(

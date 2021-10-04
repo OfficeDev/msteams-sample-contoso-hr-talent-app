@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,7 @@ using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Polly;
 using Refit;
@@ -106,15 +108,15 @@ namespace TeamsTalentMgmtAppV4
 
             services.AddTransient<IBot, TeamsTalentMgmtBot>();
             services
-                .AddMvc()
-                .AddJsonOptions(options => { options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore; })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                .AddMvc(options => { options.EnableEndpointRouting = false; })
+                .AddJsonOptions(options => { options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull; })
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddAutoMapper(typeof(TeamsTalentAppBaseProfile), typeof(TeamsTalentMgmtProfile));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {

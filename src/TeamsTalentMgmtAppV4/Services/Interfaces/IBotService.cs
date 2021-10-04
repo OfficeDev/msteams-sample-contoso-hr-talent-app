@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
@@ -9,6 +10,7 @@ namespace TeamsTalentMgmtAppV4.Services.Interfaces
     {
         Task HandleMembersAddedAsync(
             ITurnContext<IConversationUpdateActivity> turnContext,
+            IList<ChannelAccount> membersAdded,
             CancellationToken cancellationToken);
 
         Task<IMessageActivity> OpenPositionAsync(

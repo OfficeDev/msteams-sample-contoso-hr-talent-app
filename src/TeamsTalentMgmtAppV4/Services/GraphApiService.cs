@@ -67,7 +67,7 @@ namespace TeamsTalentMgmtAppV4.Services
                 {
                     var installBotRequest = new BaseRequest($"https://graph.microsoft.com/beta/users/{users[0].Id}/teamwork/installedApps", graphClient)
                     {
-                        Method = HttpMethod.Post.Method,
+                        Method = HttpMethods.POST,
                         ContentType = MediaTypeNames.Application.Json
                     };
 
@@ -84,7 +84,7 @@ namespace TeamsTalentMgmtAppV4.Services
                     // https://github.com/microsoftgraph/microsoft-graph-docs/issues/5547
                     await new BaseRequest($"https://graph.microsoft.com/beta/users/{users[0].Id}/chats?$filter=installedApps/any(a:a/teamsApp/id eq '{teamApp.Id}')", graphClient)
                     {
-                        Method = HttpMethod.Get.Method
+                        Method = HttpMethods.GET
                     }.SendAsync(null, cancellationToken);
 
                     success = true;

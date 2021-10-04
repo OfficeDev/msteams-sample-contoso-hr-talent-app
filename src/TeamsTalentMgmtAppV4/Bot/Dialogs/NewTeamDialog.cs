@@ -35,7 +35,7 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
 
         public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options = null, CancellationToken cancellationToken = default)
         {
-            var text = dc.Context.GetTextWithoutCommand(BotCommands.NewTeamDialog);
+            var text = dc.Context.Activity.GetTextWithoutCommand(BotCommands.NewTeamDialog);
             var positions = await _positionService.Search(text, 15, cancellationToken);
             if (positions.Count == 1)
             {

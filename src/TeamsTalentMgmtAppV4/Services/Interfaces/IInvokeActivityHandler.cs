@@ -3,34 +3,38 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
+using Newtonsoft.Json.Linq;
 
 namespace TeamsTalentMgmtAppV4.Services.Interfaces
 {
     public interface IInvokeActivityHandler
     {
-        Task<InvokeResponse> HandleMessagingExtensionQueryAsync(
+        Task<MessagingExtensionResponse> HandleMessagingExtensionQueryAsync(
             ITurnContext turnContext,
             MessagingExtensionQuery query,
             CancellationToken cancellationToken);
 
-        Task<InvokeResponse> HandleMessagingExtensionFetchTaskAsync(
+        Task<MessagingExtensionActionResponse> HandleMessagingExtensionFetchTaskAsync(
             ITurnContext<IInvokeActivity> turnContext,
+            MessagingExtensionAction action,
             CancellationToken cancellationToken);
 
-        Task<InvokeResponse> HandleMessagingExtensionSubmitActionAsync(
+        Task<MessagingExtensionActionResponse> HandleMessagingExtensionSubmitActionAsync(
             ITurnContext<IInvokeActivity> turnContext,
+            MessagingExtensionAction action,
             CancellationToken cancellationToken);
 
-        Task<InvokeResponse> HandleMessagingExtensionOnCardButtonClickedAsync(
+        Task HandleMessagingExtensionOnCardButtonClickedAsync(
+            ITurnContext<IInvokeActivity> turnContext,
+            JObject cardData,
+            CancellationToken cancellationToken);
+        /*
+        Task HandleSigninVerifyStateAsync(
             ITurnContext<IInvokeActivity> turnContext,
             CancellationToken cancellationToken);
+        */
 
-        Task<InvokeResponse> HandleSigninVerifyStateAsync(
-            ITurnContext<IInvokeActivity> turnContext,
-            SigninStateVerificationQuery query,
-            CancellationToken cancellationToken);
-
-        Task<InvokeResponse> HandleAppBasedLinkQueryAsync(
+        Task<MessagingExtensionResponse> HandleAppBasedLinkQueryAsync(
             ITurnContext<IInvokeActivity> turnContext,
             AppBasedLinkQuery query,
             CancellationToken cancellationToken);

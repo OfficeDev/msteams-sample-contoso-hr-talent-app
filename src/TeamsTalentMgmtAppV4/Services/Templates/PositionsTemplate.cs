@@ -5,6 +5,7 @@ using Microsoft.Bot.Builder.TemplateManager;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using TeamsTalentMgmtAppV4.Bot.Models;
+using TeamsTalentMgmtAppV4.Extensions;
 using TeamsTalentMgmtAppV4.Models.TemplateModels;
 using TeamTalentMgmtApp.Shared.Constants;
 using TeamTalentMgmtApp.Shared.Models.Bot;
@@ -33,7 +34,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 
         private static Attachment BuildPositionAsAdaptiveCard(PositionTemplateModel data)
         {
-            var card = new AdaptiveCard("1.0");
+            var card = new AdaptiveCard("1.3");
             var position = data.Items.First();
             card.Body = new List<AdaptiveElement>
             {
@@ -66,7 +67,11 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
                 card.Actions = actions;
             }
 
-            return card.ToAttachment();
+            return new Attachment
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card
+            };
         }
 
         private static Attachment BuildPositionAsThumbnailCard(PositionTemplateModel data)

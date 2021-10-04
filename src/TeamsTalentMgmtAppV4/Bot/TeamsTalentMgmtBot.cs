@@ -1,12 +1,16 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
+using Newtonsoft.Json.Linq;
 using TeamsTalentMgmtAppV4.Bot.Dialogs;
 using TeamsTalentMgmtAppV4.Extensions;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TeamsTalentMgmtAppV4.Bot
 {
@@ -29,25 +33,27 @@ namespace TeamsTalentMgmtAppV4.Bot
             _invokeActivityHandler = invokeActivityHandler;
         }
 
-        protected override Task<InvokeResponse> OnSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, SigninStateVerificationQuery query, CancellationToken cancellationToken)
-            => _invokeActivityHandler.HandleSigninVerifyStateAsync(turnContext, query, cancellationToken);
+        /*
+        protected override Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+            => _invokeActivityHandler.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
+        */
 
-        protected override Task<InvokeResponse> OnMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
+        protected override Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleMessagingExtensionQueryAsync(turnContext, query, cancellationToken);
 
-        protected override Task<InvokeResponse> OnMessagingExtensionFetchTaskAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-            => _invokeActivityHandler.HandleMessagingExtensionFetchTaskAsync(turnContext, cancellationToken);
+        protected override Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionFetchTaskAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
+            => _invokeActivityHandler.HandleMessagingExtensionFetchTaskAsync(turnContext, action, cancellationToken);
 
-        protected override Task<InvokeResponse> OnMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-            => _invokeActivityHandler.HandleMessagingExtensionSubmitActionAsync(turnContext, cancellationToken);
+        protected override Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
+            => _invokeActivityHandler.HandleMessagingExtensionSubmitActionAsync(turnContext, action, cancellationToken);
 
-        protected override Task<InvokeResponse> OnMessagingExtensionOnCardButtonClickedAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-            => _invokeActivityHandler.HandleMessagingExtensionOnCardButtonClickedAsync(turnContext, cancellationToken);
+        protected override Task OnTeamsMessagingExtensionCardButtonClickedAsync(ITurnContext<IInvokeActivity> turnContext, JObject cardData, CancellationToken cancellationToken)
+            => _invokeActivityHandler.HandleMessagingExtensionOnCardButtonClickedAsync(turnContext, cardData, cancellationToken);
 
-        protected override Task OnConversationUpdateActivityAsync(ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
-            => _botService.HandleMembersAddedAsync(turnContext, cancellationToken);
+        protected override Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+            => _botService.HandleMembersAddedAsync(turnContext, membersAdded, cancellationToken);
 
-        protected override Task<InvokeResponse> OnAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
+        protected override Task<MessagingExtensionResponse> OnTeamsAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleAppBasedLinkQueryAsync(turnContext, query, cancellationToken);
 
         protected override Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
@@ -61,13 +67,13 @@ namespace TeamsTalentMgmtAppV4.Bot
             return _mainDialog.RunAsync(turnContext, _conversationState.CreateProperty<DialogState>(nameof(TeamsTalentMgmtBot)), cancellationToken);
         }
 
-        protected override Task<InvokeResponse> OnFileConsentDeclineAsync(
+        protected override Task<InvokeResponse> OnTeamsFileConsentDeclineAsync(
             ITurnContext<IInvokeActivity> turnContext,
             FileConsentCardResponse fileConsentCardResponse,
             CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleFileConsentDeclineResponse(turnContext, fileConsentCardResponse, cancellationToken);
 
-        protected override Task<InvokeResponse> OnFileConsentAcceptAsync(
+        protected override Task<InvokeResponse> OnTeamsFileConsentAcceptAsync(
             ITurnContext<IInvokeActivity> turnContext,
             FileConsentCardResponse fileConsentCardResponse,
             CancellationToken cancellationToken)
