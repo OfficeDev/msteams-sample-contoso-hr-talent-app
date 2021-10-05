@@ -208,7 +208,7 @@
             //fetch stuff
 
             let accessToken = window.localStorage.getItem("userToken");
-            let authorization = "Bearer: " + accessToken;
+            let authorization = "Bearer " + accessToken;
             let data = await fetch(window.location.origin + '/api/positions/', {
                 headers: {
                     Authorization: authorization,
@@ -255,9 +255,6 @@
             await this.handlePageLoad();
             this.loadPage();
         })
-
-
-
 
     </script>
 </body>

@@ -111,29 +111,29 @@
             getData(window.localStorage.getItem("username"), positionId);
         }
 
-            async function getData(recruiterId, positionId) {
-                $(".button-holder").hide();
-                $(".loading").show();
-                var apiPath = "/api/positions/open";
-                if (recruiterId && recruiterId.lastIndexOf("@") !== -1) {
-                    apiPath = "/api/recruiters/" + encodeURIComponent(recruiterId.substring(0, recruiterId.lastIndexOf("@"))) + "/positions";
-                }
-
-                let accessToken = window.localStorage.getItem("userToken");
-                let authorization = "Bearer: " + accessToken;
-                let data = await fetch(window.location.origin + apiPath, {
-                    headers: {
-                        Authorization: authorization,
-                    }
-                });
-
-                if (data.ok) {
-                    let json = await data.json();
-                    buildPage(json, recruiterId, positionId);
-                } else {
-                    console.error("HTTP-Error: " + data.status);
-                }
+        async function getData(recruiterId, positionId) {
+            $(".button-holder").hide();
+            $(".loading").show();
+            var apiPath = "/api/positions/open";
+            if (recruiterId && recruiterId.lastIndexOf("@") !== -1) {
+                apiPath = "/api/recruiters/" + encodeURIComponent(recruiterId.substring(0, recruiterId.lastIndexOf("@"))) + "/positions";
             }
+
+            let accessToken = window.localStorage.getItem("userToken");
+            let authorization = "Bearer " + accessToken;
+            let data = await fetch(window.location.origin + apiPath, {
+                headers: {
+                    Authorization: authorization,
+                }
+            });
+
+            if (data.ok) {
+                let json = await data.json();
+                buildPage(json, recruiterId, positionId);
+            } else {
+                console.error("HTTP-Error: " + data.status);
+            }
+        }
 
         function buildPage(data, recruiterId, positionId) {
             var activeIndex = 0;

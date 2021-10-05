@@ -1,10 +1,17 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.BotFramework;
@@ -14,6 +21,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.IO;
 using Newtonsoft.Json;
 using Polly;
 using Refit;
@@ -53,6 +63,30 @@ namespace TeamsTalentMgmtAppV4
                         .AllowAnyMethod()
                         .AllowAnyOrigin();
                 });
+            });
+
+            services.AddAuthorization(options =>
+            {
+                var authorizationPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                        .RequireAuthenticatedUser()
+                        .Build();
+                options.DefaultPolicy = authorizationPolicy;
+            });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/";
+                options.Audience = Configuration["MicrosoftAppId"];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    IssuerValidator = MultitenantWildcardIssuerValidator,
+                    NameClaimType = "name"
+                };
             });
 
             services.AddRefitClient<IConnectorService>()
@@ -131,6 +165,10 @@ namespace TeamsTalentMgmtAppV4
 
             app.UseCors("CorsPolicy");
             app.UseStatusCodePages();
+
+            app.UseAuthorization();
+            app.UseAuthentication();
+
             app.UseMvc();
 
             using (var serviceScope = app.ApplicationServices.CreateScope())
@@ -141,6 +179,34 @@ namespace TeamsTalentMgmtAppV4
                 var dataSeedPath = Path.Combine(currentDirectory, "SampleData");
                 SampleData.InitializeDatabase(dataSeedPath, db);
             }
+        }
+
+        private static string MultitenantWildcardIssuerValidator(string issuer, SecurityToken token, TokenValidationParameters parameters)
+        {
+            if (token is JwtSecurityToken jwt)
+            {
+                var tokenTenantId = jwt.Claims.Where(c => c.Type == "tid").FirstOrDefault().Value;
+                if (issuer == $"https://login.microsoftonline.com/{tokenTenantId}/v2.0")
+                {
+                    return issuer;
+                }
+            }
+
+            // Recreate the exception that is thrown by default
+            // when issuer validation fails
+            var validIssuer = parameters.ValidIssuer ?? "null";
+            var validIssuers = parameters.ValidIssuers == null
+                ? "null"
+                : !parameters.ValidIssuers.Any()
+                    ? "empty"
+                    : string.Join(", ", parameters.ValidIssuers);
+            string errorMessage = FormattableString.Invariant(
+                $"IDX10205: Issuer validation failed. Issuer: '{issuer}'. Did not match: validationParameters.ValidIssuer: '{validIssuer}' or validationParameters.ValidIssuers: '{validIssuers}'.");
+
+            throw new SecurityTokenInvalidIssuerException(errorMessage)
+            {
+                InvalidIssuer = issuer
+            };
         }
     }
 }

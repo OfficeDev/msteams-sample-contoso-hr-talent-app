@@ -18,6 +18,8 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 {
     public class CandidatesTemplate : BaseTemplateManager
     {
+        private const string AdaptiveCardVersion = "1.0";
+
         private readonly LanguageTemplateDictionary _responseTemplates = new LanguageTemplateDictionary
         {
             ["default"] = new TemplateIdMap
@@ -114,7 +116,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 
         private static Attachment BuildSingleCandidateCardAsAdaptive(CandidateTemplateModel data)
         {
-            var card = new AdaptiveCard("1.3");
+            var card = new AdaptiveCard(AdaptiveCardVersion);
 
             var candidate = data.Items.First();
             card.Body = new List<AdaptiveElement>
@@ -217,7 +219,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
             card.Actions.Add(new AdaptiveShowCardAction
             {
                 Title = "Leave comment",
-                Card = new AdaptiveCard("1.3")
+                Card = new AdaptiveCard(AdaptiveCardVersion)
                 {
                     Body = new List<AdaptiveElement>
                     {
@@ -266,7 +268,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 
             action.RepresentAsBotBuilderAction(wrapAction);
 
-            return new AdaptiveCard("1.3")
+            return new AdaptiveCard(AdaptiveCardVersion)
             {
                 Version = "1.0",
                 Body = new List<AdaptiveElement>

@@ -13,15 +13,15 @@
         //declare the required parameters/options for the MSAL library to use - it will redirect back to /auth-end.html once the Azure AD sign-in process is completed
         const msalConfig = {
             auth: {
-                clientId: "253f51df-b6b5-4792-8347-90883f76a10a",
-                redirectUri: window.location.origin + "/StaticViews/LoginResult.html"
+                clientId: "8cdc7b8e-5639-4e84-914d-4d83b76dc147",
+                redirectUri: window.location.origin + "/staticviews/loginresult.html"
             }
         };
 
         //declare scopes that you want to request in the returned access_token. If consent is required, MSAL will handle this
 
         var requestObj = {
-            scopes: [`api://jalew123.eu.ngrok.io/access_as_user`],
+            scopes: [`api://botid-8cdc7b8e-5639-4e84-914d-4d83b76dc147/access_as_user`],
             prompt: "select_account"
         };
 

@@ -182,98 +182,95 @@
             }
         }
 
-            async function buildPage(positionId) {
+        async function buildPage(positionId) {
 
-                let accessToken = window.localStorage.getItem("userToken");
-                let authorization = "Bearer: " + accessToken;
-                let data = await fetch(window.location.origin + '/api/positions/' + positionId, {
-                    headers: {
-                        Authorization: authorization,
-                    }
-                });
-
-                if (data.ok) {
-                    let json = await data.json();
-                    getData(json);
-                } else {
-                    console.error("HTTP-Error: " + data.status);
+            let accessToken = window.localStorage.getItem("userToken");
+            let authorization = "Bearer " + accessToken;
+            let data = await fetch(window.location.origin + '/api/positions/' + positionId, {
+                headers: {
+                    Authorization: authorization,
                 }
+            });
+
+            if (data.ok) {
+                let json = await data.json();
+                getData(json);
+            } else {
+                console.error("HTTP-Error: " + data.status);
+            }
+        }
+
+        function getData(data) {
+
+            $("#job-title").text(data.title);
+            $("#job-id").text(data.positionExternalId);
+            $("#hiring-manager").text(data.hiringManager.name);
+            $("#job-description").text(data.description);
+            $("#job-description").prop("title", data.fullDescription);
+            $("#job-location").text(data.location.city + ', ' + data.location.state);
+            $("#hrManagerImagesTemplate").html(buildIconTemplate(data.hiringManager, true, false));
+            var hirringTeam = [];
+            var maxCountOfHiringTeam = 4;
+
+            if (data.candidates) {
+                var candidatesRows = '';
+                var appliedCount = 0;
+                var screeningCount = 0;
+                var interviewingCount = 0;
+                var offeredCount = 0;
+                data.candidates.forEach(function (candidate, index) {
+                    if (candidate.interviews) {
+                        candidate.interviews.forEach(function (i) {
+                            var shouldAdd = true;
+                            hirringTeam.forEach(function (ht) {
+                                if (ht.recruiterId === i.recruiterId) {
+                                    shouldAdd = false;
+                                }
+                            });
+                            if (i.recruiter && shouldAdd && hirringTeam.length < maxCountOfHiringTeam) {
+                                hirringTeam.push(i.recruiter);
+                            }
+                        });
+                    }
+
+                    if (candidate.stage === "Applied") { appliedCount++; }
+                    else if (candidate.stage === "Interviewing") { interviewingCount++; }
+                    else if (candidate.stage === "Screening") { screeningCount++; }
+                    else if (candidate.stage === "Offered") { offeredCount++; }
+                    var personImage = buildIconTemplate(candidate, false, true);
+                    candidatesRows += '<div class="ms-Grid-row itemRow small-font-size" onclick="openDetails(' + candidate.candidateId + ',\'' + candidate.name + '\')">'
+                        + '<div class="ms-sm1 ms-Grid-col">' + personImage + '</div>'
+                        + '<div class="ms-sm4 ms-Grid-col text-row">' + candidate.name + '</div>'
+                        + '<div class="ms-sm2 ms-Grid-col text-row">Yesterday</div>'
+                        + '<div class="ms-sm3 ms-Grid-col text-row">' + candidate.location.city + ', ' + candidate.location.state + '</div>'
+                        + '<div class="ms-sm2 ms-Grid-col text-row stage-btn" data-index="' + index + '" data-positionId="' + candidate.positionId + '">'
+                        + '<span class="stageColumn label-' + candidate.id + '" data-index="' + index + '" data-positionId="' + candidate.positionId + '">' + candidate.stage + '</span>'
+                        + '</div>'
+                        + '</div>';
+                });
+                $("#applied-count").text(appliedCount);
+                $("#screening-count").text(screeningCount);
+                $("#interviewing-count").text(interviewingCount);
+                $("#offered-count").text(offeredCount);
+                $("#candidate-rows").html(candidatesRows);
+                var extraLabel = data.candidates.length === 1 ? "candidate" : "candidates";
+                $("#candidates-count-label").text(data.candidates.length + " " + extraLabel);
+            }
+            else {
+                $(".show-candidates-section").hide();
             }
 
-                function getData(data) {
-
-
-                    $("#job-title").text(data.title);
-                    $("#job-id").text(data.positionExternalId);
-                    $("#hiring-manager").text(data.hiringManager.name);
-                    $("#job-description").text(data.description);
-                    $("#job-description").prop("title", data.fullDescription);
-                    $("#job-location").text(data.location.city + ', ' + data.location.state);
-                    $("#hrManagerImagesTemplate").html(buildIconTemplate(data.hiringManager, true, false));
-                    var hirringTeam = [];
-                    var maxCountOfHiringTeam = 4;
-
-                    if (data.candidates) {
-                        var candidatesRows = '';
-                        var appliedCount = 0;
-                        var screeningCount = 0;
-                        var interviewingCount = 0;
-                        var offeredCount = 0;
-                        data.candidates.forEach(function (candidate, index) {
-                            if (candidate.interviews) {
-                                candidate.interviews.forEach(function (i) {
-                                    var shouldAdd = true;
-                                    hirringTeam.forEach(function (ht) {
-                                        if (ht.recruiterId === i.recruiterId) {
-                                            shouldAdd = false;
-                                        }
-                                    });
-                                    if (i.recruiter && shouldAdd && hirringTeam.length < maxCountOfHiringTeam) {
-                                        hirringTeam.push(i.recruiter);
-                                    }
-                                });
-                            }
-
-                            if (candidate.stage === "Applied") { appliedCount++; }
-                            else if (candidate.stage === "Interviewing") { interviewingCount++; }
-                            else if (candidate.stage === "Screening") { screeningCount++; }
-                            else if (candidate.stage === "Offered") { offeredCount++; }
-                            var personImage = buildIconTemplate(candidate, false, true);
-                            candidatesRows += '<div class="ms-Grid-row itemRow small-font-size" onclick="openDetails(' + candidate.candidateId + ',\'' + candidate.name + '\')">'
-                                + '<div class="ms-sm1 ms-Grid-col">' + personImage + '</div>'
-                                + '<div class="ms-sm4 ms-Grid-col text-row">' + candidate.name + '</div>'
-                                + '<div class="ms-sm2 ms-Grid-col text-row">Yesterday</div>'
-                                + '<div class="ms-sm3 ms-Grid-col text-row">' + candidate.location.city + ', ' + candidate.location.state + '</div>'
-                                + '<div class="ms-sm2 ms-Grid-col text-row stage-btn" data-index="' + index + '" data-positionId="' + candidate.positionId + '">'
-                                + '<span class="stageColumn label-' + candidate.id + '" data-index="' + index + '" data-positionId="' + candidate.positionId + '">' + candidate.stage + '</span>'
-                                + '</div>'
-                                + '</div>';
-                        });
-                        $("#applied-count").text(appliedCount);
-                        $("#screening-count").text(screeningCount);
-                        $("#interviewing-count").text(interviewingCount);
-                        $("#offered-count").text(offeredCount);
-                        $("#candidate-rows").html(candidatesRows);
-                        var extraLabel = data.candidates.length === 1 ? "candidate" : "candidates";
-                        $("#candidates-count-label").text(data.candidates.length + " " + extraLabel);
-                    }
-                    else {
-                        $(".show-candidates-section").hide();
-                    }
-
-                    if (hirringTeam.length > 0) {
-                        var template = '';
-                        hirringTeam.forEach(function (hrPerson) {
-                            template += buildIconTemplate(hrPerson, true, false);
-                        });
-                        $("#hrStuffImagesTemplate").html(template);
-                    }
-                    else {
-                        $(".show-hr-section").hide();
-                    }
-                }
-
-
+            if (hirringTeam.length > 0) {
+                var template = '';
+                hirringTeam.forEach(function (hrPerson) {
+                    template += buildIconTemplate(hrPerson, true, false);
+                });
+                $("#hrStuffImagesTemplate").html(template);
+            }
+            else {
+                $(".show-hr-section").hide();
+            }
+        }
 
         function buildIconTemplate(person, addName, centerImage) {
             var nameAddition = "";

@@ -8,6 +8,7 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using TeamsTalentMgmtAppV4.Models;
@@ -40,6 +41,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
         // todoscott:add controller access token logic....
         [HttpGet]
         [Route("api/app")]
+        [Authorize]
         public ActionResult Get() => Ok(new
         {
             appId = _appSettings.TeamsAppId,
@@ -48,6 +50,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpGet]
         [Route("api/candidates/{id}")]
+        [Authorize]
         public async Task<ActionResult<CandidateDto>> GetCandidateById(int id, CancellationToken cancellationToken)
         {
             var candidate = await _candidateService.GetById(id, cancellationToken);
@@ -56,6 +59,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpGet]
         [Route("api/candidates/{id}/profilePicture")]
+        [Authorize]
         public async Task<HttpResponseMessage> GetCandidateImageById(int id, CancellationToken cancellationToken)
         {
             var user = _mapper.Map<CandidateDto>(await _candidateService.GetById(id, cancellationToken));
@@ -72,6 +76,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpPut]
         [Route("api/candidates/")]
+        [Authorize]
         public async Task<ActionResult> UpdateCandidateStage([FromBody] Candidate candidate, CancellationToken cancellationToken)
         {
             await _candidateService.UpdateCandidateStage(candidate.CandidateId, candidate.Stage, cancellationToken);
@@ -80,6 +85,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpGet]
         [Route("api/positions")]
+        [Authorize]
         public async Task<ActionResult> GetAllPositions(CancellationToken cancellationToken)
         {
             var positions = await _positionService.GetAllPositions(cancellationToken);
@@ -88,6 +94,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpGet]
         [Route("api/positions/{id}")]
+        [Authorize]
         public async Task<ActionResult<PositionDto>> GetPositionById(int id, CancellationToken cancellationToken)
         {
             var position = await _positionService.GetById(id, cancellationToken);
@@ -96,6 +103,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpGet]
         [Route("api/recruiters/{alias}/positions")]
+        [Authorize]
         public async Task<ActionResult<PositionDto>> GetPositionsByRecruiterAlias(string alias, CancellationToken cancellationToken)
         {
             var positions = await _positionService.GetOpenPositions(alias, cancellationToken);
@@ -104,6 +112,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
 
         [HttpGet]
         [Route("api/positions/open")]
+        [Authorize]
         public async Task<ActionResult<PositionDto>> GetAllOpenPositions(CancellationToken cancellationToken)
         {
             var positions = await _positionService.GetOpenPositions(string.Empty, cancellationToken);

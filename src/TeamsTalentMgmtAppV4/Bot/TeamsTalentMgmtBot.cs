@@ -38,6 +38,11 @@ namespace TeamsTalentMgmtAppV4.Bot
             => _invokeActivityHandler.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
         */
 
+        public override Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
+        {
+            return base.OnTurnAsync(turnContext, cancellationToken);
+        }
+
         protected override Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleMessagingExtensionQueryAsync(turnContext, query, cancellationToken);
 

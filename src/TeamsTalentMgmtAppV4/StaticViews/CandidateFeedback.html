@@ -195,42 +195,42 @@
             getData(json, candidateId, appId);
         }
 
-            async function getApp() {
+        async function getApp() {
 
-                let accessToken = window.localStorage.getItem("userToken");
-                let authorization = "Bearer: " + accessToken;
-                let data = await fetch(window.location.origin + '/api/app', {
-                    headers: {
-                        Authorization: authorization,
-                    }
-                });
-
-                if (data.ok) {
-                    let json = await data.json();
-                    var appId = json.appId;
-                    return appId
-                } else {
-                    console.error("HTTP-Error: " + data.status);
+            let accessToken = window.localStorage.getItem("userToken");
+            let authorization = "Bearer " + accessToken;
+            let data = await fetch(window.location.origin + '/api/app', {
+                headers: {
+                    Authorization: authorization,
                 }
+            });
+
+            if (data.ok) {
+                let json = await data.json();
+                var appId = json.appId;
+                return appId
+            } else {
+                console.error("HTTP-Error: " + data.status);
             }
+        }
 
-            async function getCandidates(candidateId) {
+        async function getCandidates(candidateId) {
 
-                let accessToken = window.localStorage.getItem("userToken");
-                let authorization = "Bearer: " + accessToken;
-                let data = await fetch(window.location.origin + '/api/candidates/' + candidateId, {
-                    headers: {
-                        Authorization: authorization,
-                    }
-                });
-
-                if (data.ok) {
-                    let json = await data.json();
-                    return json
-                } else {
-                    console.error("HTTP-Error: " + data.status);
+            let accessToken = window.localStorage.getItem("userToken");
+            let authorization = "Bearer " + accessToken;
+            let data = await fetch(window.location.origin + '/api/candidates/' + candidateId, {
+                headers: {
+                    Authorization: authorization,
                 }
+            });
+
+            if (data.ok) {
+                let json = await data.json();
+                return json
+            } else {
+                console.error("HTTP-Error: " + data.status);
             }
+        }
 
 
         function getData(data, candidateId, appId) {
@@ -334,10 +334,6 @@
                 $("#interviews-conducted").text('(' + conductedRecruiters.length + '/' + data.interviews.length + ' interviews conducted)');
             }
         }
-
-
-
-
 
         function buildIconTemplate(person) {
             if (person.profilePicture == null) {
