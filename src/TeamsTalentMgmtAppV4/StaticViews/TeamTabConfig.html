@@ -159,7 +159,6 @@
 
         async function loadPage()
         {
-            microsoftTeams.initialize();
             var nameSelector = $('#tabname');
             var currentSelectedPositionId = 0;
             var positionData;
@@ -225,7 +224,6 @@
             }
 
             //Save handler when user clicked on Save button
-            microsoftTeams.initialize();
             microsoftTeams.settings.registerOnSaveHandler(function (saveEvent) {
 
                 microsoftTeams.getContext(function () {

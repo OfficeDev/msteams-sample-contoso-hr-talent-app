@@ -85,7 +85,8 @@ namespace TeamsTalentMgmtAppV4
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     IssuerValidator = MultitenantWildcardIssuerValidator,
-                    NameClaimType = "name"
+                    NameClaimType = "name",
+                    SignatureValidator = (token, s) => new JwtSecurityToken(token)
                 };
             });
 
@@ -185,6 +186,11 @@ namespace TeamsTalentMgmtAppV4
         {
             if (token is JwtSecurityToken jwt)
             {
+                if (jwt.Issuer == "https://api.botframework.com")
+                {
+                    return jwt.Issuer;
+                }
+
                 var tokenTenantId = jwt.Claims.Where(c => c.Type == "tid").FirstOrDefault().Value;
                 if (issuer == $"https://login.microsoftonline.com/{tokenTenantId}/v2.0")
                 {

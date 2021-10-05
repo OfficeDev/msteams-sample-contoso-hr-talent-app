@@ -131,9 +131,11 @@ namespace TeamsTalentMgmtAppV4.Services
 
             return new MessagingExtensionResponse
             {
-                ComposeExtension =
+                ComposeExtension = new MessagingExtensionResult
                 {
-                    Attachments = attachments
+                    Attachments = attachments,
+                    Type = "result",
+                    AttachmentLayout = "list"
                 }
             };
         }

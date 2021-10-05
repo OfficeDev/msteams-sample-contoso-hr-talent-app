@@ -34,7 +34,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 
         private static Attachment BuildPositionAsAdaptiveCard(PositionTemplateModel data)
         {
-            var card = new AdaptiveCard("1.3");
+            var card = new AdaptiveCard("1.0");
             var position = data.Items.First();
             card.Body = new List<AdaptiveElement>
             {

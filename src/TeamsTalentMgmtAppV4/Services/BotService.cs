@@ -88,15 +88,13 @@ namespace TeamsTalentMgmtAppV4.Services
                 }
             }
 
-            throw new NotImplementedException("Find out how to get tenant id here");
+            var tenantId = turnContext.Activity.ChannelData.Tenant.Id;
 
-            /*
             await _recruiterService.SaveConversationData(
                 turnContext.Activity.ServiceUrl,
                 tenantId,
                 membersAdded.ToDictionary(channelAccount => channelAccount.Id, channelAccount => channelAccount.Name),
                 cancellationToken);
-            */
         }
 
         public async Task<IMessageActivity> LeaveInternalCommentAsync(
