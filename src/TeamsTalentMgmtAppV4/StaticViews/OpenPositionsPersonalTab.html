@@ -6,9 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.17/js/adal.min.js" integrity="sha384-BIOS/65fbAsb2XiCCSTlZSTTl0ZgqkOU522dpyk5meOnN2EOQ3uH+QpqEtoAtmBn" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
-    <script type="text/javascript" src="/StaticViews/js/jwt-decode/build/jwt-decode.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
     <style type="text/css">
@@ -104,134 +104,14 @@
 
     <script type="text/javascript">
 
-
-        handlePageLoad = async () => {
-
-            try {
-                await this.initialiseTeams();
-                this.inTeams = true;
-            }
-            catch {
-                this.inTeams = false;
-            }
-
-            if (this.inTeams) {
-
-                await this.signInWithTeams();
-                loadpage();
-            }
-            else {
-                outsideTeamsSignIn();
-            }
-        }
-
-        initialiseTeams = () => {
-            let rejectPromise = null;
-            let timeout = null;
-
-            const promise = new Promise((resolve, reject) => {
-                rejectPromise = reject;
-                microsoftTeams.initialize(() => {
-                    window.clearTimeout(timeout);
-                    resolve(true);
-                }
-                )
-            });
-            //todo: try and improve this if possible. At present this function will return that the page is not open in Teams
-            //based on the MicrosoftTeams.initialize function timing out within 2 seconds
-
-            timeout = window.setTimeout(() => {
-                rejectPromise("Teams Initialise Timeout");
-            }, 2000);
-
-            return promise;
-        }
-
-
-        signInWithTeams = async () => {
-            try {
-
-                const result = await this.getTeamsToken();
-                let accessToken = window.localStorage.getItem("userToken");
-                return
-            }
-            catch (error) {
-                console.log("Teams SSO Error: " + error);
-                if (typeof error === "string" && error.toLowerCase() == "resourcedisabled") {
-                    console.log("Resource Disabled - probably something wrong with your manifest or Azure AD App Reg config");
-                    $("#teamsConsentButton").show();
-                    return
-                }
-
-                else {
-                    console.warn("error... but, it wasn't resource disabled....")
-                    $("#teamsConsentButton").show();
-                    return
-                }
-            }
-        }
-
-        getTeamsToken = () => {
-
-            return new Promise((resolve, reject) => {
-                microsoftTeams.authentication.getAuthToken({
-                    successCallback: (token) => {
-                        window.localStorage.setItem("userToken", token);
-                        resolve(token);
-                    },
-                    failureCallback: (reason) => {
-                        reject(reason);
-                    }
-                })
-            });
-        }
-
-        function teamsFallbackAuth() {
-
-            microsoftTeams.authentication.authenticate({
-                url: window.location.origin + "/StaticViews/Login.html",
-                width: 600,
-                height: 535,
-                successCallback: function (result) {
-                },
-                failureCallback: function (reason) {
-                    handleAuthError(reason);
-                }
-            });
-        }
-
-        function outsideTeamsSignIn() {
-            let accessToken = window.localStorage.getItem("userToken");
-            if (accessToken != null) {
-                loadpage(accessToken);
-            }
-            else {
-                //$("#consentButton").show();
-                authRedirect();
-            }
-        }
-
-        function authRedirect() {
-            window.localStorage.setItem("sourceHostname", location.protocol + "//" + location.hostname + ":" + location.port + "/StaticViews/OpenPositionsPersonalTab.html");
-            console.log("redirectURL will be: " + window.localStorage.getItem("sourceHostname"));
-            window.location.assign(location.protocol + "//" + location.hostname + ":" + location.port + "/StaticViews/Login.html");
-        }
-
-        function getInfoFromToken(accessToken) {
-            var token = accessToken;
-            var decoded = jwt_decode(token);
-            let preferredusername = decoded.preferred_username
-            window.localStorage.setItem("username", preferredusername);
-            //decode and pull info from accessToken
-        }
-
-        function loadpage(accessToken) {
+        async function loadPage() {
+            var accessToken = window.localStorage.getItem("userToken");
             getInfoFromToken(accessToken);
-            var activeIndex = 0;
-            var isMsteamsContext = false;
-            var maxActiveIndex;
+            var positionId = getQueryStringValue('positionId');
+            getData(window.localStorage.getItem("username"), positionId);
+        }
 
-            function buildPage(recruiterId, positionId) {
+            async function getData(recruiterId, positionId) {
                 $(".button-holder").hide();
                 $(".loading").show();
                 var apiPath = "/api/positions/open";
@@ -239,7 +119,26 @@
                     apiPath = "/api/recruiters/" + encodeURIComponent(recruiterId.substring(0, recruiterId.lastIndexOf("@"))) + "/positions";
                 }
 
-                $.get(window.location.origin + apiPath).done(function (data) {
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + apiPath, {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    buildPage(json, recruiterId, positionId);
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+        function buildPage(data, recruiterId, positionId) {
+            var activeIndex = 0;
+            var isMsteamsContext = false;
+            var maxActiveIndex;
                     var positionHtml = "";
                     $(".loading").hide();
                     if (recruiterId) {
@@ -344,7 +243,7 @@
                         }
                         clickOnMainBlock($('#main-block-' + newIndex));
                     });
-                });
+                }
 
                 function clickOnMainBlock(currentObject) {
                     var index = currentObject.data("index");
@@ -353,101 +252,18 @@
                         currentObject.addClass("active");
                     }
                     activeIndex = index;
-                };
-            };
-
-            //todojack:test SSO inside Teams
-
-            //function authenticate() {
-            //    microsoftTeams.authentication.authenticate({
-            //        url: window.location.origin + "/StaticViews/Login.html",
-            //        width: 1024,
-            //        height: 1024,
-            //        successCallback: function (userName) {
-            //            buildPage(userName);
-            //        }
-            //    });
-            //};
-
-            $(document).ready(function () {
-                //todoscott: pass access token when calls are made to client API controller 
-                $.get(window.location.origin + '/api/app').done(function (data) {
-                    buildPage(window.localStorage.getItem("username"));
-                });
-            });
-
-
-            //microsoftTeams.getContext(function (context) {
-
-            //    isMsteamsContext = true;
-            //    $.get(window.location.origin + '/api/app').done(function (data) {
-
-
-            //        localStorage.setItem('msTeamsContext', JSON.stringify({ tid: context && context.tid, loginHint: context.loginHint }));
-
-            //var clientId = data.botId;
-            //localStorage.setItem('userClientId', clientId);
-            //var config = {
-            //    redirectUri: "https://" + window.location.host + "/StaticViews/LoginResult.html",
-            //    cacheLocation: "localStorage",
-            //    navigateToLoginRequestUrl: false,
-            //    clientId: clientId,
-            //    tenant: context && context.tid
-            //};
-
-            //if (context.loginHint) {
-            //    config.extraQueryParameter = "scope=openid+profile&login_hint=" + encodeURIComponent(context.loginHint);
-            //} else {
-            //    config.extraQueryParameter = "scope=openid+profile";
-            //}
-
-            //var authContext = new AuthenticationContext(config);
-            //var user = authContext.getCachedUser(clientId);
-            //if (!user) {
-            //    // https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/authentication/auth-silent-aad
-            //    authContext.acquireToken(clientId, function (err) {
-            //        if (!err) {
-            //            var user = authContext.getCachedUser(clientId);
-            //            buildPage(user.userName);
-            //        }
-            //        else {
-            //            showSignInButton();
-            //        }
-            //    });
-            //}
-            //else {
-            //    if (user.profile.oid !== context.userObjectId) {
-            //        authContext.clearCache();
-            //        showSignInButton();
-            //    }
-            //    else {
-
-
-            //            buildPage(user.userName);
-            //            //}
-            //        });
-            //    });
-            //});
-
-            //function showSignInButton() {
-            //    $(".loading").hide();
-            //    $(".button-holder").show();
-            //}
-
-            //setTimeout(function () {
-            //    if (!isMsteamsContext) {
-            //        var positionId = getQueryStringValue('positionId');
-            //        buildPage(null, positionId);
-            //    }
-            //}, 2000);
-            //});
+                }
+ 
 
             function getQueryStringValue(key) {
                 return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
             }
-        };
 
-        $(this.handlePageLoad);
+        $(async () => {
+            await this.handlePageLoad();
+            this.loadPage();
+        })
+
 
 
     </script>

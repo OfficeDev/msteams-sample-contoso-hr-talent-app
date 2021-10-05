@@ -6,6 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
 
@@ -162,21 +165,44 @@
 
     <script type="text/javascript">
 
+        function loadPage() {
 
-        microsoftTeams.initialize();
-
-
-        //todojack: add SSO inside Teams
-        //todoscott: pass access token when calling client APIs
-        $(document).ready(function () {
-            microsoftTeams.getContext(function (context) {
-                var positionId = 1;
+            let isTeams = window.localStorage.getItem("isTeams");
+            window.localStorage.removeItem("isTeams");
+            if (!isTeams) {
+                var urlParams = new URLSearchParams(location.search);
+                var positionId = urlParams.get('positionId');
                 buildPage(positionId);
-            });
+            }
+            else {
+                microsoftTeams.getContext(function (context) {
+                    var positionId = context.entityId;
+                    buildPage(positionId);
+                });
+            }
+        }
 
-            function buildPage(positionId) {
-                //todoscott:add headers for auth
-                $.get(window.location.origin + '/api/positions/' + positionId).done(function (data) {
+            async function buildPage(positionId) {
+
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + '/api/positions/' + positionId, {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    getData(json);
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+                function getData(data) {
+
+
                     $("#job-title").text(data.title);
                     $("#job-id").text(data.positionExternalId);
                     $("#hiring-manager").text(data.hiringManager.name);
@@ -245,9 +271,9 @@
                     else {
                         $(".show-hr-section").hide();
                     }
-                });
-            }
-        });
+                }
+
+
 
         function buildIconTemplate(person, addName, centerImage) {
             var nameAddition = "";
@@ -279,6 +305,12 @@
                 height: "large"
             });
         }
+
+        $(async () => {
+            await this.handlePageLoad();
+            this.loadPage();
+        })
+
     </script>
 </head>
 <body dir="ltr">

@@ -4,7 +4,11 @@
     <title>Candidate Feedback</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <script src="https://unpkg.com/@microsoft/teams-js@1.5.0/dist/MicrosoftTeams.min.js" integrity="sha384-EKT9Wswdn78EAHAqcOh50wnaPfH3aPa7YZ1R89/TCN98AhkqZJ2g47u4k2I5eCk8" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
+    <script type="text/javascript" src="/StaticViews/js/jwt-decode.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
 
@@ -183,8 +187,53 @@
     </style>
 
     <script>
-        $(document).ready(function () {
+
+        async function loadPage() {
             var candidateId = getQueryStringValue('candidateId');
+            let appId = await getApp();
+            let json = await getCandidates(candidateId);
+            getData(json, candidateId, appId);
+        }
+
+            async function getApp() {
+
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + '/api/app', {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    var appId = json.appId;
+                    return appId
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+            async function getCandidates(candidateId) {
+
+                let accessToken = window.localStorage.getItem("userToken");
+                let authorization = "Bearer: " + accessToken;
+                let data = await fetch(window.location.origin + '/api/candidates/' + candidateId, {
+                    headers: {
+                        Authorization: authorization,
+                    }
+                });
+
+                if (data.ok) {
+                    let json = await data.json();
+                    return json
+                } else {
+                    console.error("HTTP-Error: " + data.status);
+                }
+            }
+
+
+        function getData(data, candidateId, appId) {
 
             var taskInfo = {
                 url: window.location.origin + '/StaticViews/CandidateFeedback.html?candidateId=' + encodeURIComponent(candidateId),
@@ -192,106 +241,103 @@
                 height: "large"
             };
 
-            //todojack: add SSO inside Teams
-        //todoscott: pass access token when calling client APIs
 
-            $.get(window.location.origin + '/api/app').done(function (data) {
-                var appId = data.appId;
-                $.get(window.location.origin + '/api/candidates/' + candidateId).done(function (data) {
-                    $('#candidate-name').text(data.name);
-                    $('#position-title').text(data.positionTitle);
+            $('#candidate-name').text(data.name);
+            $('#position-title').text(data.positionTitle);
 
-                    taskInfo.title = encodeURIComponent('Feedback for ' + data.name);
+            taskInfo.title = encodeURIComponent('Feedback for ' + data.name);
 
-                    var taskModuleUrl = 'https://teams.microsoft.com/l/task/' + appId + '?url=' + taskInfo.url + '&title=' + taskInfo.title + '&height=' + taskInfo.height + '&width=' + taskInfo.width;
-                    $(".copyToClipboard").click(function () {
-                        $(".tooltiptext").css("visibility", "visible");
-                        setTimeout(function () {
-                            $(".tooltiptext").css("visibility", "hidden");
-                        }, 1500);
-                        copyToClipboard(taskModuleUrl);
-                    });
+            var taskModuleUrl = 'https://teams.microsoft.com/l/task/' + appId + '?url=' + taskInfo.url + '&title=' + taskInfo.title + '&height=' + taskInfo.height + '&width=' + taskInfo.width;
+            $(".copyToClipboard").click(function () {
+                $(".tooltiptext").css("visibility", "visible");
+                setTimeout(function () {
+                    $(".tooltiptext").css("visibility", "hidden");
+                }, 1500);
+                copyToClipboard(taskModuleUrl);
+            });
 
-                    var conductedRecruiters = [];
-                    var upcomingHtml = '';
-                    var conductedHtml = '';
-                    var commentsHtml = '';
-                    if (data.interviews && data.interviews.length > 0) {
-                        data.interviews.forEach(function (i) {
-                            if (i) {
-                                var personImage = buildIconTemplate(i.recruiter);
-                                var interviewDate = new Date(i.interviewDate);
-                                var interviewTemplate = '<div class="ms-Grid-row itemRow small-font-size">'
-                                    + '<div class="ms-sm1 ms-Grid-col">' + personImage + '</div>'
-                                    + '<div class="ms-sm4 ms-Grid-col text-row">' + i.recruiter.name + '</div>'
-                                    + '<div class="ms-sm3 ms-Grid-col text-row">' + (interviewDate.getMonth() + 1) + '/' + interviewDate.getDate() + '/' + interviewDate.getFullYear() + '</div>'
-                                    + '<div class="ms-sm4 ms-Grid-col text-row">' + i.feedbackText + '</div>'
-                                    + '</div>';
-                                if (interviewDate <= Date.now()) {
-                                    conductedHtml += interviewTemplate;
-                                    conductedRecruiters.push(i.recruiter);
-                                }
-                                else {
-                                    upcomingHtml += interviewTemplate;
-                                }
-                            }
-                        });
-                    }
-
-                    if (data.comments && data.comments.length > 0) {
-                        data.comments.forEach(function (c) {
-                            var role = c.authorRole == null ? "" : c.authorRole;
-                            var icon = buildIconTemplate({ name: c.authorName, profilePicture: c.authorProfilePicture });
-                            commentsHtml += '<div class="itemRow">'
-                                + '<div class="itemCell">'
-                                + icon
-                                + '<div class="itemContent">'
-                                + '<div class="itemName small-font-size">' + c.authorName + '</div>'
-                                + '<div class="itemIndex small-font-size">' + role + '</div>'
-                                + '<div class="small-font-size">' + c.text + '</div>'
-                                + '</div>'
-                                + '</div>'
-                                + '</div>';
-                        });
-                    }
-
-                    if (upcomingHtml.length === 0) {
-                        $(".show-upcoming-section").hide();
-                    }
-                    else {
-                        $("#upcoming-label").text('(' + (data.interviews.length - conductedRecruiters.length) + ')');
-                        $("#upcoming-rows").html(upcomingHtml);
-                    }
-
-                    if (conductedHtml.length === 0) {
-                        $(".show-conducted-section").hide();
-                    }
-                    else {
-                        $("#conducted-label").text('(' + conductedRecruiters.length + ')');
-                        $("#conducted-rows").html(conductedHtml);
-                    }
-
-                    if (commentsHtml.length === 0) {
-                        $(".show-comments-section").hide();
-                    }
-                    else {
-                        $(".show-comments-section").show();
-                        $("#comments-label").text('(' + data.comments.length + ')');
-                        $("#comments-rows").html(commentsHtml);
-                    }
-
-                    if (conductedHtml.length === 0 && upcomingHtml.length === 0) {
-                        if (commentsHtml.length === 0) {
-                            $(".show-no-interview-section").show();
+            var conductedRecruiters = [];
+            var upcomingHtml = '';
+            var conductedHtml = '';
+            var commentsHtml = '';
+            if (data.interviews && data.interviews.length > 0) {
+                data.interviews.forEach(function (i) {
+                    if (i) {
+                        var personImage = buildIconTemplate(i.recruiter);
+                        var interviewDate = new Date(i.interviewDate);
+                        var interviewTemplate = '<div class="ms-Grid-row itemRow small-font-size">'
+                            + '<div class="ms-sm1 ms-Grid-col">' + personImage + '</div>'
+                            + '<div class="ms-sm4 ms-Grid-col text-row">' + i.recruiter.name + '</div>'
+                            + '<div class="ms-sm3 ms-Grid-col text-row">' + (interviewDate.getMonth() + 1) + '/' + interviewDate.getDate() + '/' + interviewDate.getFullYear() + '</div>'
+                            + '<div class="ms-sm4 ms-Grid-col text-row">' + i.feedbackText + '</div>'
+                            + '</div>';
+                        if (interviewDate <= Date.now()) {
+                            conductedHtml += interviewTemplate;
+                            conductedRecruiters.push(i.recruiter);
                         }
-                        $("#interviews-conducted").hide();
-                    }
-                    else {
-                        $("#interviews-conducted").text('(' + conductedRecruiters.length + '/' + data.interviews.length + ' interviews conducted)');
+                        else {
+                            upcomingHtml += interviewTemplate;
+                        }
                     }
                 });
-            });
-        });
+            }
+
+            if (data.comments && data.comments.length > 0) {
+                data.comments.forEach(function (c) {
+                    var role = c.authorRole == null ? "" : c.authorRole;
+                    var icon = buildIconTemplate({ name: c.authorName, profilePicture: c.authorProfilePicture });
+                    commentsHtml += '<div class="itemRow">'
+                        + '<div class="itemCell">'
+                        + icon
+                        + '<div class="itemContent">'
+                        + '<div class="itemName small-font-size">' + c.authorName + '</div>'
+                        + '<div class="itemIndex small-font-size">' + role + '</div>'
+                        + '<div class="small-font-size">' + c.text + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '</div>';
+                });
+            }
+
+            if (upcomingHtml.length === 0) {
+                $(".show-upcoming-section").hide();
+            }
+            else {
+                $("#upcoming-label").text('(' + (data.interviews.length - conductedRecruiters.length) + ')');
+                $("#upcoming-rows").html(upcomingHtml);
+            }
+
+            if (conductedHtml.length === 0) {
+                $(".show-conducted-section").hide();
+            }
+            else {
+                $("#conducted-label").text('(' + conductedRecruiters.length + ')');
+                $("#conducted-rows").html(conductedHtml);
+            }
+
+            if (commentsHtml.length === 0) {
+                $(".show-comments-section").hide();
+            }
+            else {
+                $(".show-comments-section").show();
+                $("#comments-label").text('(' + data.comments.length + ')');
+                $("#comments-rows").html(commentsHtml);
+            }
+
+            if (conductedHtml.length === 0 && upcomingHtml.length === 0) {
+                if (commentsHtml.length === 0) {
+                    $(".show-no-interview-section").show();
+                }
+                $("#interviews-conducted").hide();
+            }
+            else {
+                $("#interviews-conducted").text('(' + conductedRecruiters.length + '/' + data.interviews.length + ' interviews conducted)');
+            }
+        }
+
+
+
+
 
         function buildIconTemplate(person) {
             if (person.profilePicture == null) {
@@ -316,6 +362,12 @@
         function getQueryStringValue(key) {
             return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
         }
+
+        $(async () => {
+            await this.handlePageLoad();
+            this.loadPage();
+        })
+
     </script>
 </head>
 <body>
