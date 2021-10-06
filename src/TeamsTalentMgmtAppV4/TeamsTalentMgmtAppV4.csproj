@@ -3,15 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <CodeAnalysisRuleSet>../../StyleCop.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
     <NoWarn>$(NoWarn),NU1701</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="../../stylecop.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="StaticViews\*.*">
@@ -36,10 +31,6 @@
     <PackageReference Include="Refit" Version="6.0.94" />
     <PackageReference Include="Refit.HttpClientFactory" Version="6.0.94" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="3.11.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.0.63">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

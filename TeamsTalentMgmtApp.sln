@@ -16,8 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution 
 		NuGet.Config = NuGet.Config
 		manifest\outline_icon.png = manifest\outline_icon.png
 		..\README.md = ..\README.md
-		stylecop.json = stylecop.json
-		StyleCop.ruleset = StyleCop.ruleset
 	EndProjectSection
 EndProject
 Global
