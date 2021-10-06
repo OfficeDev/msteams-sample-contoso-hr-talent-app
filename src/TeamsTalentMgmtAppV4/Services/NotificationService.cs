@@ -183,13 +183,12 @@ namespace TeamsTalentMgmtAppV4.Services
             }
         }
 
-        private async Task SendToConversation(
+        public async Task SendToConversation(
             string text,
             IList<Attachment> attachments,
             ConversationData conversationData,
             CancellationToken cancellationToken)
         {
-            // MicrosoftAppCredentials.TrustServiceUrl(conversationData.ServiceUrl);
             using (var client = new ConnectorClient(
                 new Uri(conversationData.ServiceUrl),
                 new MicrosoftAppCredentials(_appSettings.MicrosoftAppId, _appSettings.MicrosoftAppPassword)))

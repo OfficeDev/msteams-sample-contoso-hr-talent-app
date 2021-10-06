@@ -31,6 +31,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
         private readonly IPositionService _positionService;
         private readonly IGraphApiService _graphApiService;
         private readonly IBotFrameworkHttpAdapter _botAdapter;
+        private readonly INotificationService _notificationService;
 
         public ClientApiController(
             IMapper mapper,
@@ -38,13 +39,15 @@ namespace TeamsTalentMgmtAppV4.Controllers
             ICandidateService candidateService,
             IPositionService positionService,
             IGraphApiService graphApiService,
-            IBotFrameworkHttpAdapter botAdapter)
+            IBotFrameworkHttpAdapter botAdapter,
+            INotificationService notificationService)
         {
             _appSettings = appSettings.Value;
             _candidateService = candidateService;
             _positionService = positionService;
             _graphApiService = graphApiService;
             _botAdapter = botAdapter;
+            _notificationService = notificationService;
             _mapper = mapper;
         }
 
@@ -143,30 +146,37 @@ namespace TeamsTalentMgmtAppV4.Controllers
                 candidateFeedback.Name,
                 cancellationToken);
 
-            if (!Request.Headers.TryGetValue("Authorization", out var values))
+            await _notificationService.SendToConversation(candidateFeedback.Feedback, null, new ConversationData
             {
-                return Unauthorized();
-            }
-
-            var token = values[0].Substring(values[0].IndexOf(' ')).Trim();
-
-            var chatId = await _graphApiService.GetProactiveChatIdForUser(token, candidateFeedback.TenantId, candidateFeedback.Notify, candidateFeedback.Feedback, cancellationToken);
-
-            var conversationReference = new ConversationReference
-            {
-                User = new ChannelAccount
-                {
-                    Id = candidateFeedback.Notify
-                },
-                Conversation = new ConversationAccount
-                {
-                    Id = chatId,
-                    TenantId = candidateFeedback.TenantId
-                },
+                AccountId = candidateFeedback.Notify,
+                TenantId = candidateFeedback.TenantId,
                 ServiceUrl = "https://smba.trafficmanager.net/apis"
-            };
+            }, cancellationToken);
 
-            await ((BotAdapter)_botAdapter).ContinueConversationAsync(_appSettings.MicrosoftAppId, conversationReference, ProactiveCallback, cancellationToken);
+            //if (!Request.Headers.TryGetValue("Authorization", out var values))
+            //{
+            //    return Unauthorized();
+            //}
+
+            //var token = values[0].Substring(values[0].IndexOf(' ')).Trim();
+
+            //var chatId = await _graphApiService.GetProactiveChatIdForUser(token, candidateFeedback.TenantId, candidateFeedback.Notify, candidateFeedback.Feedback, cancellationToken);
+
+            //var conversationReference = new ConversationReference
+            //{
+            //    User = new ChannelAccount
+            //    {
+            //        Id = candidateFeedback.Notify
+            //    },
+            //    Conversation = new ConversationAccount
+            //    {
+            //        Id = chatId,
+            //        TenantId = candidateFeedback.TenantId
+            //    },
+            //    ServiceUrl = "https://smba.trafficmanager.net/apis"
+            //};
+
+            //await ((BotAdapter)_botAdapter).ContinueConversationAsync(_appSettings.MicrosoftAppId, conversationReference, ProactiveCallback, cancellationToken);
 
             return Ok();
         }
