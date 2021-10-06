@@ -1,13 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.OAuth;
 using Microsoft.Bot.Connector;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TeamsTalentMgmtAppV4.Extensions;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
@@ -19,6 +27,7 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
     public class MainDialog : RouterDialog
     {
         private readonly IBotService _botService;
+        private readonly ITokenProvider _tokenProvider;
         private readonly AppSettings _appSettings;
 
         public MainDialog(
@@ -34,10 +43,12 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             TopCandidatesDialog topCandidatesDialog,
             IBotService botService,
             IOptions<AppSettings> appSettings,
-            IBotTelemetryClient botTelemetryClient)
+            IBotTelemetryClient botTelemetryClient,
+            ITokenProvider tokenProvider)
             : base(nameof(MainDialog), botTelemetryClient)
         {
             _botService = botService;
+            _tokenProvider = tokenProvider;
             _appSettings = appSettings.Value;
 
             AddDialog(candidateDetailsDialog);
@@ -69,12 +80,12 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             {
                 (BotCommands.HelpDialogCommand, nameof(HelpDialog), false),
                 (BotCommands.SignOutDialogCommand, nameof(SignOutDialog), false),
-                (BotCommands.CandidateDetailsDialogCommand, nameof(CandidateDetailsDialog), false),
-                (BotCommands.TopCandidatesDialogCommand, nameof(TopCandidatesDialog), false),
-                (BotCommands.OpenPositionsDialogCommand, nameof(OpenPositionsDialog), false),
-                (BotCommands.PositionsDetailsDialogCommand, nameof(PositionsDetailsDialog), false),
-                (BotCommands.NewJobPostingDialog, nameof(NewJobPostingDialog), false),
-                (BotCommands.CandidateSummaryDialog, nameof(CandidateSummaryDialog), false),
+                (BotCommands.CandidateDetailsDialogCommand, nameof(CandidateDetailsDialog), true),
+                (BotCommands.TopCandidatesDialogCommand, nameof(TopCandidatesDialog), true),
+                (BotCommands.OpenPositionsDialogCommand, nameof(OpenPositionsDialog), true),
+                (BotCommands.PositionsDetailsDialogCommand, nameof(PositionsDetailsDialog), true),
+                (BotCommands.NewJobPostingDialog, nameof(NewJobPostingDialog), true),
+                (BotCommands.CandidateSummaryDialog, nameof(CandidateSummaryDialog), true),
                 (BotCommands.NewTeamDialog, nameof(NewTeamDialog), true),
                 (BotCommands.InstallBotDialogCommand, nameof(InstallBotDialog), true)
             };
@@ -92,10 +103,9 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
                     if (commandDialog.AuthorizationIsNeeded)
                     {
                         var connectionName = _appSettings.OAuthConnectionName;
-                        var token = await ((IUserTokenProvider)innerDc.Context.Adapter)
-                            .GetUserTokenAsync(innerDc.Context, connectionName, null, cancellationToken);
+                        var token = await _tokenProvider.GetTokenAsync(innerDc.Context, cancellationToken: cancellationToken);
 
-                        if (string.IsNullOrEmpty(token?.Token))
+                        if (string.IsNullOrEmpty(token))
                         {
                             dialogName = nameof(OAuthPrompt);
                         }

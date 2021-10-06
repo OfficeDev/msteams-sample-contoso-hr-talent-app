@@ -7,10 +7,13 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Bot.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
+using Microsoft.Identity.Client;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
 using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
@@ -23,15 +26,43 @@ namespace TeamsTalentMgmtAppV4.Services
         private readonly AppSettings _appSettings;
         private readonly DatabaseContext _databaseContext;
         private readonly ILogger<GraphApiService> _logger;
+        private readonly IConfiguration _configuration;
 
         public GraphApiService(
             ILogger<GraphApiService> logger,
             IOptions<AppSettings> appSettings,
+            IConfiguration configuration,
             DatabaseContext databaseContext)
         {
             _appSettings = appSettings.Value;
             _logger = logger;
+            _configuration = configuration;
             _databaseContext = databaseContext;
+        }
+
+        public async Task<string> GetProactiveChatIdForUser(string token, string tenantId, string upn, string message, CancellationToken cancellationToken)
+        {
+            token = await GetTokenForApp(token, tenantId);
+
+            var graphClient = GetGraphServiceClient(token);
+
+            var installedApps = await graphClient.Users[upn].Teamwork.InstalledApps
+                .Request()
+                .Filter($"teamsApp/externalId eq '{_configuration["TeamsAppId"]}'")
+                .Expand("teamsApp")
+                .GetAsync(cancellationToken);
+
+            var app = installedApps.FirstOrDefault();
+            if (app == null)
+            {
+                return null;
+            }
+
+            var chat = await graphClient.Users[upn].Teamwork.InstalledApps[app.Id].Chat
+                .Request()
+                .GetAsync(cancellationToken);
+
+            return chat.Id;
         }
 
         public Task<User> GetMyProfile(string token, CancellationToken cancellationToken) =>
@@ -270,5 +301,21 @@ namespace TeamsTalentMgmtAppV4.Services
                requestMessage.Headers.Authorization = new AuthenticationHeaderValue(CoreConstants.Headers.Bearer, token);
                return Task.CompletedTask;
            }));
+
+        private async Task<string> GetTokenForApp(string token, string tenantId)
+        {
+            var builder = ConfidentialClientApplicationBuilder.Create(_configuration["MicrosoftAppId"])
+                .WithClientSecret(_configuration["MicrosoftAppPassword"])
+                .WithTenantId(tenantId)
+                .WithRedirectUri("msal" + _configuration["MicrosoftAppId"] + "://auth");
+
+            var client = builder.Build();
+
+            var tokenBuilder = client.AcquireTokenForClient(new[] { "https://graph.microsoft.com/.default" });
+
+            var result = await tokenBuilder.ExecuteAsync();
+
+            return result.AccessToken;
+        }
     }
 }

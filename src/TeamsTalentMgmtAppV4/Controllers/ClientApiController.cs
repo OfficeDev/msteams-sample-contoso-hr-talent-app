@@ -10,8 +10,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Options;
 using TeamsTalentMgmtAppV4.Models;
+using TeamsTalentMgmtAppV4.Services.Interfaces;
 using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 using TeamTalentMgmtApp.Shared.Models.Dto;
 using TeamTalentMgmtApp.Shared.Services.Interfaces;
@@ -25,16 +29,22 @@ namespace TeamsTalentMgmtAppV4.Controllers
         private readonly IMapper _mapper;
         private readonly ICandidateService _candidateService;
         private readonly IPositionService _positionService;
+        private readonly IGraphApiService _graphApiService;
+        private readonly IBotFrameworkHttpAdapter _botAdapter;
 
         public ClientApiController(
             IMapper mapper,
             IOptions<AppSettings> appSettings,
             ICandidateService candidateService,
-            IPositionService positionService)
+            IPositionService positionService,
+            IGraphApiService graphApiService,
+            IBotFrameworkHttpAdapter botAdapter)
         {
             _appSettings = appSettings.Value;
             _candidateService = candidateService;
             _positionService = positionService;
+            _graphApiService = graphApiService;
+            _botAdapter = botAdapter;
             _mapper = mapper;
         }
 
@@ -118,5 +128,62 @@ namespace TeamsTalentMgmtAppV4.Controllers
             var positions = await _positionService.GetOpenPositions(string.Empty, cancellationToken);
             return Ok(_mapper.Map<List<PositionDto>>(positions));
         }
+
+        [HttpPut]
+        [Route("api/candidates/{id}/feedback")]
+        [Authorize]
+        public async Task<ActionResult> AddFeedbackToCandidate(int id, [FromBody] CandidateFeedback candidateFeedback, CancellationToken cancellationToken)
+        {
+            await _candidateService.AddComment(
+                new TeamTalentMgmtApp.Shared.Models.Commands.LeaveCommentCommand
+                {
+                    CandidateId = id,
+                    Comment = candidateFeedback.Feedback
+                },
+                candidateFeedback.Name,
+                cancellationToken);
+
+            if (!Request.Headers.TryGetValue("Authorization", out var values))
+            {
+                return Unauthorized();
+            }
+
+            var token = values[0].Substring(values[0].IndexOf(' ')).Trim();
+
+            var chatId = await _graphApiService.GetProactiveChatIdForUser(token, candidateFeedback.TenantId, candidateFeedback.Notify, candidateFeedback.Feedback, cancellationToken);
+
+            var conversationReference = new ConversationReference
+            {
+                User = new ChannelAccount
+                {
+                    Id = candidateFeedback.Notify
+                },
+                Conversation = new ConversationAccount
+                {
+                    Id = chatId,
+                    TenantId = candidateFeedback.TenantId
+                },
+                ServiceUrl = "https://smba.trafficmanager.net/apis"
+            };
+
+            await ((BotAdapter)_botAdapter).ContinueConversationAsync(_appSettings.MicrosoftAppId, conversationReference, ProactiveCallback, cancellationToken);
+
+            return Ok();
+        }
+
+        private async Task ProactiveCallback(ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            // If you encounter permission-related errors when sending this message, see
+            // https://aka.ms/BotTrustServiceUrl
+            await turnContext.SendActivityAsync("proactive hello");
+        }
+    }
+
+    public class CandidateFeedback
+    {
+        public string Feedback { get; set; }
+        public string Name { get; set; }
+        public string Notify { get; set; }
+        public string TenantId { get; set; }
     }
 }

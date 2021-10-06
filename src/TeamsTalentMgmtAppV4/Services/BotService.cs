@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Models.TemplateModels;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
@@ -31,6 +33,7 @@ namespace TeamsTalentMgmtAppV4.Services
         private readonly ICandidateService _candidateService;
         private readonly IInterviewService _interviewService;
         private readonly ILocationService _locationService;
+        private readonly ITokenProvider _tokenProvider;
         private readonly PositionsTemplate _positionsTemplate;
         private readonly NewJobPostingToAdaptiveCardTemplate _newJobPostingTemplate;
         private readonly CandidatesTemplate _candidatesTemplate;
@@ -43,6 +46,7 @@ namespace TeamsTalentMgmtAppV4.Services
             ICandidateService candidateService,
             IInterviewService interviewService,
             ILocationService locationService,
+            ITokenProvider tokenProvider,
             CandidatesTemplate candidatesTemplate,
             PositionsTemplate positionsTemplate,
             NewJobPostingToAdaptiveCardTemplate newJobPostingTemplate)
@@ -54,9 +58,22 @@ namespace TeamsTalentMgmtAppV4.Services
             _candidateService = candidateService;
             _interviewService = interviewService;
             _locationService = locationService;
+            _tokenProvider = tokenProvider;
             _candidatesTemplate = candidatesTemplate;
             _positionsTemplate = positionsTemplate;
             _newJobPostingTemplate = newJobPostingTemplate;
+        }
+
+        public async Task<InvokeResponse> HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var token = ((JObject)turnContext.Activity.Value).Value<string>("token");
+            if (token != null && !string.IsNullOrEmpty(token))
+            {
+                await _tokenProvider.SetTokenAsync(token, turnContext, cancellationToken);
+                await turnContext.SendActivityAsync("You have signed in successfully. Please type command one more time.", cancellationToken: cancellationToken);
+            }
+
+            return new InvokeResponse { Status = (int)HttpStatusCode.OK };
         }
 
         public async Task HandleMembersAddedAsync(
@@ -79,7 +96,6 @@ namespace TeamsTalentMgmtAppV4.Services
                         Text = "I can assist you with creating new job postings, get details about your candidates, open positions and notify about your candidates stage updates. If you are admin, you can install bot for hiring managers.",
                         Buttons = new List<CardAction>
                         {
-                            new CardAction(ActionTypes.ImBack, value: BotCommands.InstallBotDialogCommand, title: "Install bot for hiring managers"),
                             new CardAction(ActionTypes.ImBack, value: BotCommands.HelpDialogCommand, title: "Help")
                         }
                     };

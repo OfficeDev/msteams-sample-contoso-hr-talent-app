@@ -1,19 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using AdaptiveCards;
 using AutoMapper;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Dialogs.Adaptive.Actions;
+using Microsoft.Bot.Builder.OAuth;
 using Microsoft.Bot.Builder.Teams;
+using Microsoft.Bot.Connector;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Options;
@@ -42,6 +50,7 @@ namespace TeamsTalentMgmtAppV4.Services
         private readonly IRecruiterService _recruiterService;
         private readonly ILocationService _locationService;
         private readonly IHttpClientFactory _clientFactory;
+        private readonly ITokenProvider _tokenProvider;
         private readonly PositionsTemplate _positionsTemplate;
         private readonly CandidatesTemplate _candidatesTemplate;
         private readonly NewJobPostingToAdaptiveCardTemplate _newJobPostingToAdaptiveCardTemplate;
@@ -57,6 +66,7 @@ namespace TeamsTalentMgmtAppV4.Services
             ILocationService locationService,
             IOptions<AppSettings> appSettings,
             IHttpClientFactory clientFactory,
+            ITokenProvider tokenProvider,
             IMapper mapper)
         {
             _appSettings = appSettings.Value;
@@ -69,6 +79,7 @@ namespace TeamsTalentMgmtAppV4.Services
             _recruiterService = recruiterService;
             _locationService = locationService;
             _clientFactory = clientFactory;
+            _tokenProvider = tokenProvider;
             _mapper = mapper;
         }
 

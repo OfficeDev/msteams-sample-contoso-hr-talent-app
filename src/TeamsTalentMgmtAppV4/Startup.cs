@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using AutoMapper;
+using ClientSideConfig;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -106,6 +107,7 @@ namespace TeamsTalentMgmtAppV4
             // Configure storage
             services.AddSingleton<IStorage, MemoryStorage>();
             services.AddSingleton<UserState>();
+            services.AddSingleton<ITokenProvider, TokenProvider>();
             services.AddSingleton<ConversationState>();
 
             services.AddDbContext<DatabaseContext>();
@@ -157,6 +159,13 @@ namespace TeamsTalentMgmtAppV4
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseClientSideConfig(
+                new
+                {
+                    microsoftAppId = Configuration["MicrosoftAppId"],
+                    accessAsUserScope = Configuration["AccessAsUserScope"]
+                }, new ClientSideConfigJsOptions());
 
             app.UseStaticFiles(new StaticFileOptions
             {

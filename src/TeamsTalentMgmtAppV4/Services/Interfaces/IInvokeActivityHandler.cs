@@ -28,11 +28,6 @@ namespace TeamsTalentMgmtAppV4.Services.Interfaces
             ITurnContext<IInvokeActivity> turnContext,
             JObject cardData,
             CancellationToken cancellationToken);
-        /*
-        Task HandleSigninVerifyStateAsync(
-            ITurnContext<IInvokeActivity> turnContext,
-            CancellationToken cancellationToken);
-        */
 
         Task<MessagingExtensionResponse> HandleAppBasedLinkQueryAsync(
             ITurnContext<IInvokeActivity> turnContext,

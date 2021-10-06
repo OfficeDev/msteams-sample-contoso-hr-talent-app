@@ -20,28 +20,33 @@ namespace TeamsTalentMgmtAppV4.Bot
         private readonly IInvokeActivityHandler _invokeActivityHandler;
         private readonly IBotService _botService;
         private readonly ConversationState _conversationState;
+        private readonly UserState _userState;
 
         public TeamsTalentMgmtBot(
             MainDialog mainDialog,
             IInvokeActivityHandler invokeActivityHandler,
             IBotService botService,
-            ConversationState conversationState)
+            ConversationState conversationState,
+            UserState userState)
         {
             _mainDialog = mainDialog;
             _conversationState = conversationState;
+            _userState = userState;
             _botService = botService;
             _invokeActivityHandler = invokeActivityHandler;
         }
 
-        /*
-        protected override Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-            => _invokeActivityHandler.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
-        */
-
-        public override Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
+        public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return base.OnTurnAsync(turnContext, cancellationToken);
+            await base.OnTurnAsync(turnContext, cancellationToken);
+
+            // Save any state changes that might have occurred during the turn.
+            await _conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+            await _userState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
+
+        protected override Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+            => _botService.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
 
         protected override Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleMessagingExtensionQueryAsync(turnContext, query, cancellationToken);

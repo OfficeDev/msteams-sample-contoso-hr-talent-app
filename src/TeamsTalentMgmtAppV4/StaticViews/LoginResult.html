@@ -7,6 +7,7 @@
     <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.16.1/js/msal-browser.js"></script>
     <script src="https://statics.teams.microsoft.com/sdk/v1.5.2/js/MicrosoftTeams.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="/config.js"></script>
 
     <style rel="stylesheet">
         [lang|=en], body {
@@ -81,7 +82,7 @@
         //similar to Auth-Start options/parameters, but we need to define navigateToLoginRequestUrl: false or it sends us back to login.html, which we do not want in this sample app.
         const msalConfig = {
             auth: {
-                clientId: "8cdc7b8e-5639-4e84-914d-4d83b76dc147",
+                clientId: window.global.microsoftAppId,
                 redirectUri: window.location.origin + "/StaticViews/LoginResult.html",
                 navigateToLoginRequestUrl: false
             }
