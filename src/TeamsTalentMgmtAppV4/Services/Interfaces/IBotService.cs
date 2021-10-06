@@ -8,8 +8,6 @@ namespace TeamsTalentMgmtAppV4.Services.Interfaces
 {
     public interface IBotService
     {
-        Task<InvokeResponse> HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken);
-
         Task HandleMembersAddedAsync(
             ITurnContext<IConversationUpdateActivity> turnContext,
             IList<ChannelAccount> membersAdded,

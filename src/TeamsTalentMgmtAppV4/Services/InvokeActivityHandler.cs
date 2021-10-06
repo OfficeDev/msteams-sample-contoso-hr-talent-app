@@ -44,6 +44,7 @@ namespace TeamsTalentMgmtAppV4.Services
     {
         private readonly AppSettings _appSettings;
         private readonly IMapper _mapper;
+        private readonly ConversationState _conversationState;
         private readonly ICandidateService _candidateService;
         private readonly IInterviewService _interviewService;
         private readonly IPositionService _positionService;
@@ -67,7 +68,8 @@ namespace TeamsTalentMgmtAppV4.Services
             IOptions<AppSettings> appSettings,
             IHttpClientFactory clientFactory,
             ITokenProvider tokenProvider,
-            IMapper mapper)
+            IMapper mapper,
+            ConversationState conversationState)
         {
             _appSettings = appSettings.Value;
             _newJobPostingToAdaptiveCardTemplate = newJobPostingToAdaptiveCardTemplate;
@@ -81,6 +83,21 @@ namespace TeamsTalentMgmtAppV4.Services
             _clientFactory = clientFactory;
             _tokenProvider = tokenProvider;
             _mapper = mapper;
+            _conversationState = conversationState;
+        }
+
+        public async Task<InvokeResponse> HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var token = ((JObject)turnContext.Activity.Value).Value<string>("token");
+            if (token != null && !string.IsNullOrEmpty(token))
+            {
+                await _tokenProvider.SetTokenAsync(token, turnContext, cancellationToken);
+                await turnContext.SendActivityAsync("You have signed in successfully. Please type command one more time.", cancellationToken: cancellationToken);
+            }
+
+            await _conversationState.ClearStateAsync(turnContext, cancellationToken);
+
+            return new InvokeResponse { Status = (int)HttpStatusCode.OK };
         }
 
         public async Task<MessagingExtensionResponse> HandleMessagingExtensionQueryAsync(

@@ -9,6 +9,8 @@ namespace TeamsTalentMgmtAppV4.Services.Interfaces
 {
     public interface IInvokeActivityHandler
     {
+        Task<InvokeResponse> HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken);
+
         Task<MessagingExtensionResponse> HandleMessagingExtensionQueryAsync(
             ITurnContext turnContext,
             MessagingExtensionQuery query,

@@ -21,6 +21,7 @@ using TeamTalentMgmtApp.Shared.Constants;
 using TeamTalentMgmtApp.Shared.Models.Commands;
 using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 using TeamTalentMgmtApp.Shared.Services.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TeamsTalentMgmtAppV4.Services
 {
@@ -62,18 +63,6 @@ namespace TeamsTalentMgmtAppV4.Services
             _candidatesTemplate = candidatesTemplate;
             _positionsTemplate = positionsTemplate;
             _newJobPostingTemplate = newJobPostingTemplate;
-        }
-
-        public async Task<InvokeResponse> HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-        {
-            var token = ((JObject)turnContext.Activity.Value).Value<string>("token");
-            if (token != null && !string.IsNullOrEmpty(token))
-            {
-                await _tokenProvider.SetTokenAsync(token, turnContext, cancellationToken);
-                await turnContext.SendActivityAsync("You have signed in successfully. Please type command one more time.", cancellationToken: cancellationToken);
-            }
-
-            return new InvokeResponse { Status = (int)HttpStatusCode.OK };
         }
 
         public async Task HandleMembersAddedAsync(

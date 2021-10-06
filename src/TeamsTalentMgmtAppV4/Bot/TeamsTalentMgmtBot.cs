@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
@@ -46,7 +47,7 @@ namespace TeamsTalentMgmtAppV4.Bot
         }
 
         protected override Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-            => _botService.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
+            => _invokeActivityHandler.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
 
         protected override Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleMessagingExtensionQueryAsync(turnContext, query, cancellationToken);

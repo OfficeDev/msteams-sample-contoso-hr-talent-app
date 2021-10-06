@@ -4,28 +4,29 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Extensions.Options;
 using TeamsTalentMgmtAppV4.Models;
+using TeamsTalentMgmtAppV4.Services.Interfaces;
 
 namespace TeamsTalentMgmtAppV4.Bot.Dialogs
 {
     public class SignOutDialog : Dialog
     {
         private readonly AppSettings _appSettings;
+        private readonly ITokenProvider _tokenProvider;
 
-        public SignOutDialog(IOptions<AppSettings> appSettings)
+        public SignOutDialog(IOptions<AppSettings> appSettings, ITokenProvider tokenProvider)
             : base(nameof(SignOutDialog))
         {
             _appSettings = appSettings.Value;
+            _tokenProvider = tokenProvider;
         }
 
         public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options = null, CancellationToken cancellationToken = default)
         {
             var notificationMessage = "You are not logged in yet.";
-            var connectionName = _appSettings.OAuthConnectionName;
-            var adapter = (IUserTokenProvider)dc.Context.Adapter;
-            var token = await adapter.GetUserTokenAsync(dc.Context, connectionName, null, cancellationToken);
-            if (token?.Token != null)
+            var token = await _tokenProvider.GetTokenAsync(dc.Context, cancellationToken);
+            if (token != null)
             {
-                await ((IUserTokenProvider)dc.Context.Adapter).SignOutUserAsync(dc.Context, connectionName, cancellationToken: cancellationToken);
+                await _tokenProvider.SetTokenAsync(null, dc.Context, cancellationToken);
                 notificationMessage = "You've been logged out.";
             }
 
