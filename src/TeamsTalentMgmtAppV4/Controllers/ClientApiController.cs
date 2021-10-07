@@ -146,46 +146,7 @@ namespace TeamsTalentMgmtAppV4.Controllers
                 candidateFeedback.Name,
                 cancellationToken);
 
-            await _notificationService.SendToConversation(candidateFeedback.Feedback, null, new ConversationData
-            {
-                AccountId = candidateFeedback.Notify,
-                TenantId = candidateFeedback.TenantId,
-                ServiceUrl = "https://smba.trafficmanager.net/apis"
-            }, cancellationToken);
-
-            //if (!Request.Headers.TryGetValue("Authorization", out var values))
-            //{
-            //    return Unauthorized();
-            //}
-
-            //var token = values[0].Substring(values[0].IndexOf(' ')).Trim();
-
-            //var chatId = await _graphApiService.GetProactiveChatIdForUser(token, candidateFeedback.TenantId, candidateFeedback.Notify, candidateFeedback.Feedback, cancellationToken);
-
-            //var conversationReference = new ConversationReference
-            //{
-            //    User = new ChannelAccount
-            //    {
-            //        Id = candidateFeedback.Notify
-            //    },
-            //    Conversation = new ConversationAccount
-            //    {
-            //        Id = chatId,
-            //        TenantId = candidateFeedback.TenantId
-            //    },
-            //    ServiceUrl = "https://smba.trafficmanager.net/apis"
-            //};
-
-            //await ((BotAdapter)_botAdapter).ContinueConversationAsync(_appSettings.MicrosoftAppId, conversationReference, ProactiveCallback, cancellationToken);
-
             return Ok();
-        }
-
-        private async Task ProactiveCallback(ITurnContext turnContext, CancellationToken cancellationToken)
-        {
-            // If you encounter permission-related errors when sending this message, see
-            // https://aka.ms/BotTrustServiceUrl
-            await turnContext.SendActivityAsync("proactive hello");
         }
     }
 
