@@ -22,7 +22,7 @@
         //declare scopes that you want to request in the returned access_token. If consent is required, MSAL will handle this
 
         var requestObj = {
-            scopes: [window.global.accessAsUserScope],
+            scopes: [window.global.applicationIdUri + "/access_as_user"],
             prompt: "select_account"
         };
 

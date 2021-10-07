@@ -164,7 +164,7 @@ namespace TeamsTalentMgmtAppV4
                 new
                 {
                     microsoftAppId = Configuration["MicrosoftAppId"],
-                    accessAsUserScope = Configuration["AccessAsUserScope"]
+                    applicationIdUri = Configuration["ApplicationIdUri"]
                 }, new ClientSideConfigJsOptions());
 
             app.UseStaticFiles(new StaticFileOptions

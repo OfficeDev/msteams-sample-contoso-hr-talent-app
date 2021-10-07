@@ -92,14 +92,6 @@ namespace TeamsTalentMgmtAppV4.Services
                     await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
                 }
             }
-
-            var tenantId = (string)turnContext.Activity.ChannelData.tenant.id;
-
-            await _recruiterService.SaveConversationData(
-                turnContext.Activity.ServiceUrl,
-                tenantId,
-                membersAdded.ToDictionary(channelAccount => (channelAccount as TeamsChannelAccount)?.Id, channelAccount => (channelAccount as TeamsChannelAccount)?.Email),
-                cancellationToken);
         }
 
         public async Task<IMessageActivity> LeaveInternalCommentAsync(
