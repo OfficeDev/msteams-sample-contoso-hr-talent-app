@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Teams;
-using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Models.TemplateModels;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
@@ -21,7 +16,6 @@ using TeamTalentMgmtApp.Shared.Constants;
 using TeamTalentMgmtApp.Shared.Models.Commands;
 using TeamTalentMgmtApp.Shared.Models.DatabaseContext;
 using TeamTalentMgmtApp.Shared.Services.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TeamsTalentMgmtAppV4.Services
 {

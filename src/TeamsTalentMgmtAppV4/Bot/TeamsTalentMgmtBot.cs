@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
@@ -11,7 +10,6 @@ using Newtonsoft.Json.Linq;
 using TeamsTalentMgmtAppV4.Bot.Dialogs;
 using TeamsTalentMgmtAppV4.Extensions;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TeamsTalentMgmtAppV4.Bot
 {

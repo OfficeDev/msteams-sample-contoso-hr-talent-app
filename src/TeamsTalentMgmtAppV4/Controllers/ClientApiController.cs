@@ -10,9 +10,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Options;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Services.Interfaces;
@@ -29,25 +27,16 @@ namespace TeamsTalentMgmtAppV4.Controllers
         private readonly IMapper _mapper;
         private readonly ICandidateService _candidateService;
         private readonly IPositionService _positionService;
-        private readonly IGraphApiService _graphApiService;
-        private readonly IBotFrameworkHttpAdapter _botAdapter;
-        private readonly INotificationService _notificationService;
 
         public ClientApiController(
             IMapper mapper,
             IOptions<AppSettings> appSettings,
             ICandidateService candidateService,
-            IPositionService positionService,
-            IGraphApiService graphApiService,
-            IBotFrameworkHttpAdapter botAdapter,
-            INotificationService notificationService)
+            IPositionService positionService)
         {
             _appSettings = appSettings.Value;
             _candidateService = candidateService;
             _positionService = positionService;
-            _graphApiService = graphApiService;
-            _botAdapter = botAdapter;
-            _notificationService = notificationService;
             _mapper = mapper;
         }
 
