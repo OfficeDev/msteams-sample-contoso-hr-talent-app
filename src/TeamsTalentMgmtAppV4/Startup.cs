@@ -74,13 +74,13 @@ namespace TeamsTalentMgmtAppV4
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                options.Authority = $"https://login.microsoftonline.com/{Configuration["TenantId"]}/";
+                options.Authority = $"https://login.microsoftonline.com/{Configuration["MicrosoftDirectoryId"]}/v2.0";
                 options.Audience = Configuration["MicrosoftAppId"];
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     IssuerValidator = MultitenantWildcardIssuerValidator,
                     NameClaimType = "name",
-                    //SignatureValidator = (token, s) => new JwtSecurityToken(token)
+                    SignatureValidator = (token, s) => new JwtSecurityToken(token)
                 };
             });
 
