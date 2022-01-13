@@ -182,7 +182,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
 
             if (candidate.Comments.Any() || candidate.Interviews.Any())
             {
-                var contentUrl = data.AppSettings.BaseUrl + $"/StaticViews/CandidateFeedback.html?candidateId={candidate.CandidateId}";
+                var contentUrl = data.AppSettings.BaseUrl + $"StaticViews/CandidateFeedback.html?candidateId={candidate.CandidateId}";
                 card.Actions.Add(new AdaptiveOpenUrlAction
                 {
                     Title = "Open candidate feedback",

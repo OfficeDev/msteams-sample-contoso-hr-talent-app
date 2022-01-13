@@ -11,7 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		manifest\color_icon.png = manifest\color_icon.png
-		..\Developing Microsoft Teams Teamwork Solutions.pdf = ..\Developing Microsoft Teams Teamwork Solutions.pdf
 		..\LICENSE = ..\LICENSE
 		NuGet.Config = NuGet.Config
 		manifest\outline_icon.png = manifest\outline_icon.png
