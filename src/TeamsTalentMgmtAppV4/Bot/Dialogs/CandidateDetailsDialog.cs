@@ -47,7 +47,8 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
                 Items = candidates,
                 Interviewers = interviewers,
                 AppSettings = _appSettings,
-                NoItemsLabel = "You don't have such candidates."
+                NoItemsLabel = "You don't have such candidates.",
+                Locale = dc.GetLocale()
             };
 
             await _candidatesTemplate.ReplyWith(dc.Context, TemplateConstants.CandidateAsAdaptiveCardWithMultipleItems, templateModel);

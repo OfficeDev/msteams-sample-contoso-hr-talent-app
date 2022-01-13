@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -176,7 +177,7 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
                 card.Actions.Add(new AdaptiveShowCardAction
                 {
                     Title = "Schedule an interview",
-                    Card = GetAdaptiveCardForInterviewRequest(data.Interviewers.ToList(), candidate, DateTime.Now.Date.AddDays(1.0))
+                    Card = GetAdaptiveCardForInterviewRequest(data.Interviewers.ToList(), candidate, DateTime.Now.Date.AddDays(1.0), data.Locale)
                 });
             }
 
@@ -247,7 +248,8 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
         private static AdaptiveCard GetAdaptiveCardForInterviewRequest(
             List<Recruiter> interviewers,
             Candidate candidate,
-            DateTime interviewDate)
+            DateTime interviewDate,
+            string locale)
         {
             var command = new
             {
@@ -330,7 +332,11 @@ namespace TeamsTalentMgmtAppV4.Services.Templates
                     },
                     new AdaptiveDateInput
                     {
-                        Id = "interviewDate", Placeholder = "Enter in a date for the interview", Value = interviewDate.ToShortDateString()
+                        Id = "interviewDate", Placeholder = "Enter in a date for the interview"
+                        //Removing this for now as there seems to be an issue with the placeholder date value
+                        //the passed local is en-GB but Teams seems to be expecting a US date format
+                        //, Value = "01/14/2022"
+                        //, Value = interviewDate.ToString(new CultureInfo(locale).DateTimeFormat.ShortDatePattern)
                     },
                     new AdaptiveChoiceSetInput
                     {

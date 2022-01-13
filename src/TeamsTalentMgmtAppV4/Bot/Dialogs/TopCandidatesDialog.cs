@@ -53,7 +53,8 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
                     Items = candidates,
                     Interviewers = interviewers,
                     AppSettings = _appSettings,
-                    NoItemsLabel = $"There are no candidates for position ID: {positions[0].PositionExternalId}"
+                    NoItemsLabel = $"There are no candidates for position ID: {positions[0].PositionExternalId}",
+                    Locale = dc.GetLocale()
                 };
 
                 await _candidatesTemplate.ReplyWith(dc.Context, TemplateConstants.CandidateAsAdaptiveCardWithMultipleItems, templateModel);

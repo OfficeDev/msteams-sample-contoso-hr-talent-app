@@ -8,5 +8,7 @@ namespace TeamsTalentMgmtAppV4.Models.TemplateModels
         public ReadOnlyCollection<Recruiter> Interviewers { get; set; }
 
         public AppSettings AppSettings { get; set; }
+
+        public string Locale { get; set; }
     }
 }
