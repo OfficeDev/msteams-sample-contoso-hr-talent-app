@@ -147,6 +147,8 @@ namespace TeamsTalentMgmtAppV4.Services
                     break;
             }
 
+            
+
             return new MessagingExtensionResponse
             {
                 ComposeExtension = new MessagingExtensionResult
@@ -214,26 +216,21 @@ namespace TeamsTalentMgmtAppV4.Services
             return new MessagingExtensionActionResponse();
         }
 
-        public Task HandleMessagingExtensionOnCardButtonClickedAsync(ITurnContext<IInvokeActivity> turnContext, JObject cardData, CancellationToken cancellationToken)
+        public async Task HandleMessagingExtensionOnCardButtonClickedAsync(ITurnContext<IInvokeActivity> turnContext, JObject cardData, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("Need to implement this... what's in cardData?");
+            var data = cardData.ToObject<ActionCommandBase>();
 
-            /*
-            var data = turnContext.TurnState.Get<ITeamsContext>().GetMessagingExtensionQueryData();
             switch (data.CommandId)
             {
                 case AppCommands.LeaveInternalComment:
-                    var leaveCommentRequest = JsonConvert.DeserializeObject<LeaveCommentCommand>(turnContext.Activity?.Value?.ToString());
+                    var leaveCommentRequest = cardData.ToObject<LeaveCommentCommand>();
                     await _candidateService.AddComment(leaveCommentRequest, turnContext.Activity?.From.Name, cancellationToken);
                     break;
                 case AppCommands.ScheduleInterview:
-                    var scheduleInterviewRequest = JsonConvert.DeserializeObject<ScheduleInterviewCommand>(turnContext.Activity?.Value?.ToString());
+                    var scheduleInterviewRequest = cardData.ToObject<ScheduleInterviewCommand>();
                     await _interviewService.ScheduleInterview(scheduleInterviewRequest, cancellationToken);
                     break;
             }
-
-            return new InvokeResponse { Status = (int)HttpStatusCode.OK };
-            */
         }
 
         /*
