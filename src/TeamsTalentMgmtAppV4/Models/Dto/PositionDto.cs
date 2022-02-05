@@ -19,7 +19,7 @@ namespace TeamTalentMgmtApp.Shared.Models.Dto
 
         public int DaysOpen { get; set; }
 
-        public string Description => FullDescription.Length > MaxDescriptionLength ? FullDescription.Substring(0, MaxDescriptionLength) + "..." : FullDescription;
+        public string Description => FullDescription?.Length > MaxDescriptionLength ? FullDescription.Substring(0, MaxDescriptionLength) + "..." : FullDescription;
 
         public string FullDescription { get; set; }
 

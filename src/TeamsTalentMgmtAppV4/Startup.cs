@@ -139,8 +139,7 @@ namespace TeamsTalentMgmtAppV4
             services.AddTransient<IBot, TeamsTalentMgmtBot>();
             services
                 .AddMvc(options => { options.EnableEndpointRouting = false; })
-                .AddJsonOptions(options => { options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull; })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+                .AddJsonOptions(options => { options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull; });
 
             services.AddAutoMapper(typeof(TeamsTalentAppBaseProfile), typeof(TeamsTalentMgmtProfile));
         }
