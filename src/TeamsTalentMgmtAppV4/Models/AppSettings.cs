@@ -8,7 +8,9 @@
 
         public string TeamsAppId { get; set; }
         public string MicrosoftAppId { get; set; }
+        public string MicrosoftDirectoryId { get; set; }
         public string MicrosoftAppPassword { get; set; }
         public string OAuthConnectionName { get; set; }
+        public string ApplicationIdUri { get; set; }
     }
 }
