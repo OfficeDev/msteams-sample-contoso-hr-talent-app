@@ -14,17 +14,20 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
     {
         private readonly IGraphApiService _graphApiService;
         private readonly IRecruiterService _recruiterService;
+        private readonly ITokenProvider _tokenProvider;
         private readonly AppSettings _appSettings;
 
         public InstallBotDialog(
             IGraphApiService graphApiService,
             IOptions<AppSettings> appSettings,
-            IRecruiterService recruiterService)
+            IRecruiterService recruiterService,
+            ITokenProvider tokenProvider)
             : base(nameof(InstallBotDialog))
         {
             _appSettings = appSettings.Value;
             _graphApiService = graphApiService;
             _recruiterService = recruiterService;
+            _tokenProvider = tokenProvider;
         }
 
         public override async Task<DialogTurnResult> BeginDialogAsync(
@@ -32,13 +35,17 @@ namespace TeamsTalentMgmtAppV4.Bot.Dialogs
             object options = null,
             CancellationToken cancellationToken = default)
         {
+            var token = await _tokenProvider.GetTokenAsync(dc.Context, cancellationToken);
+            var domain = await _graphApiService.GetDomainForUser(token, cancellationToken);
+
             var hiringManagers = await _recruiterService.GetAllHiringManagers(cancellationToken);
-            var token = await ((IUserTokenProvider)dc.Context.Adapter)
-                            .GetUserTokenAsync(dc.Context, _appSettings.OAuthConnectionName, null, cancellationToken);
+
             var successfullyInstalled = new List<string>();
             foreach (var manager in hiringManagers)
             {
-                if (await _graphApiService.InstallBotForUser(token.Token, manager.Alias, cancellationToken))
+                var upn = manager.Alias + "@" + domain;
+
+                if (await _graphApiService.InstallBotForUser(dc.Context.Activity.Conversation.TenantId, upn, cancellationToken))
                 {
                     successfullyInstalled.Add(manager.Name);
                 }

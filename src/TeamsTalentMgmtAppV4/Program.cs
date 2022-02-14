@@ -24,6 +24,7 @@ using System.Text.Json.Serialization;
 using TeamsTalentMgmtAppV4;
 using TeamsTalentMgmtAppV4.Bot;
 using TeamsTalentMgmtAppV4.Bot.Dialogs;
+using TeamsTalentMgmtAppV4.Controllers;
 using TeamsTalentMgmtAppV4.Infrastructure;
 using TeamsTalentMgmtAppV4.Models;
 using TeamsTalentMgmtAppV4.Services;
@@ -87,7 +88,6 @@ builder.Services.AddSingleton<IBotFrameworkHttpAdapter, TeamsBotHttpAdapter>(x =
 {
     var adapter = new TeamsBotHttpAdapter(
         x.GetRequiredService<IWebHostEnvironment>(),
-        x.GetRequiredService<ICredentialProvider>(),
         x.GetRequiredService<IConfiguration>(),
         x.GetRequiredService<ILogger<TeamsBotHttpAdapter>>(),
         x.GetRequiredService<IBotTelemetryClient>(),
@@ -134,6 +134,7 @@ builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IBotService, BotService>();
 builder.Services.AddTransient<IGraphApiService, GraphApiService>();
 builder.Services.AddTransient<IInvokeActivityHandler, InvokeActivityHandler>();
+builder.Services.AddTransient<INotifierService, NotifierService>();
 
 builder.Services.AddHttpClient();
 

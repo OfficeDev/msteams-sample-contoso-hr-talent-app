@@ -9,16 +9,15 @@ using Microsoft.Extensions.Logging;
 
 namespace TeamsTalentMgmtAppV4.Bot
 {
-    public class TeamsBotHttpAdapter : BotFrameworkHttpAdapter
+    public class TeamsBotHttpAdapter : CloudAdapter
     {
         public TeamsBotHttpAdapter(
                     IWebHostEnvironment env,
-                    ICredentialProvider credentialProvider,
                     IConfiguration configuration,
                     ILogger<TeamsBotHttpAdapter> logger,
                     IBotTelemetryClient botTelemetryClient,
                     ConversationState conversationState = null)
-                    : base(configuration, logger)
+                    : base(configuration, logger: logger)
         {
             OnTurnError = async (turnContext, exception) =>
             {

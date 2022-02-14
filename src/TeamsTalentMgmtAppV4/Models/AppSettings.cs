@@ -12,5 +12,6 @@
         public string MicrosoftAppPassword { get; set; }
         public string OAuthConnectionName { get; set; }
         public string ApplicationIdUri { get; set; }
+        public string ServiceUrl { get; set; }
     }
 }
