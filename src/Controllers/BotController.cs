@@ -1,8 +1,12 @@
-﻿using System.Threading;
+﻿using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using AdaptiveCards;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Schema;
+using TeamsTalentMgmtApp.Services;
 using TeamsTalentMgmtApp.Services.Interfaces;
 
 namespace TeamsTalentMgmtApp.Controllers
@@ -13,12 +17,14 @@ namespace TeamsTalentMgmtApp.Controllers
         private readonly IBot _bot;
         private readonly IBotFrameworkHttpAdapter _adapter;
         private readonly INotificationService _notificationService;
+        private readonly IGraphApiService _graphApiService;
 
-        public BotController(IBot bot, IBotFrameworkHttpAdapter adapter, INotificationService notificationService)
+        public BotController(IBot bot, IBotFrameworkHttpAdapter adapter, INotificationService notificationService, IGraphApiService graphApiService)
         {
             _bot = bot;
             _adapter = adapter;
             _notificationService = notificationService;
+            _graphApiService = graphApiService;
         }
 
         [HttpPost]
@@ -28,20 +34,45 @@ namespace TeamsTalentMgmtApp.Controllers
 
 
         [HttpPost]
-        [Route("api/notify")]
-        public async Task<IActionResult> PostAsync([FromBody] UserTenantMessageRequest request, CancellationToken cancellationToken)
+        [Route("api/installbot")]
+        public async Task<IActionResult> InstallAsync([FromBody] UserTenantMessageRequest request, CancellationToken cancellationToken)
         {
-            var activity = MessageFactory.Text("This is a proactive notification from the api/notify");
-            var success = false;
+            var result = await _graphApiService.InstallBotForUser(request.Id, request.TenantId, cancellationToken);
 
-            if (request.Id.Contains("@"))
+            switch (result)
             {
-                success = await _notificationService.SendProactiveNotificationByUpn(request.Id, request.TenantId, activity, cancellationToken);
+                case InstallResult.InstallFailed:
+                    return BadRequest("Installation failed");
+
+                case InstallResult.AliasNotFound:
+                    return NotFound("Alias not found");
+            }
+
+            return Accepted();
+        }
+
+        [HttpPost]
+        [Route("api/notify")]
+        public async Task<IActionResult> NotifyAsync([FromBody] NotifyRequest request, CancellationToken cancellationToken)
+        {
+            IActivity activity;
+
+            if (request.Text != null)
+            {
+                activity = MessageFactory.Text(request.Text);
             }
             else
             {
-                success = await _notificationService.SendProactiveNotificationByAlias(request.Id, request.TenantId, activity, cancellationToken);
+                var card = AdaptiveCard.FromJson(request.Card.ToString()).Card;
+
+                activity = MessageFactory.Attachment(new Attachment
+                {
+                    Content = card,
+                    ContentType = AdaptiveCard.ContentType
+                });
             }
+                        
+            var success = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
             
 
             if (!success)
@@ -58,5 +89,11 @@ namespace TeamsTalentMgmtApp.Controllers
     {
         public string Id { get; set; }
         public string TenantId { get; set; }
+    }
+
+    public class NotifyRequest : UserTenantMessageRequest
+    {
+        public JsonElement Card { get; set; }
+        public string Text { get; set; }
     }
 }

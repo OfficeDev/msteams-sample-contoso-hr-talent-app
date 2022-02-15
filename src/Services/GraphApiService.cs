@@ -38,9 +38,11 @@ namespace TeamsTalentMgmtApp.Services
             _databaseContext = databaseContext;
         }
 
-        private async Task<string> GetProactiveChatIdForUser(string token, string upn, CancellationToken cancellationToken)
+        public async Task<string> GetProactiveChatIdForUser(string aliasUpnOrOid, string tenantId, CancellationToken cancellationToken)
         {
+            var token = await GetTokenForApp(tenantId);
             var graphClient = GetGraphServiceClient(token);
+            var upn = await GetUpnFromAlias(token, aliasUpnOrOid, cancellationToken);
 
             var installedApps = await graphClient.Users[upn].Teamwork.InstalledApps
                 .Request()
@@ -61,34 +63,21 @@ namespace TeamsTalentMgmtApp.Services
             return chat.Id;
         }
 
-        public async Task<string> GetProactiveChatIdForAlias(string tenantId, string alias, CancellationToken cancellationToken)
+        private async Task<string> GetUpnFromAlias(string token, string aliasUpnOrOid, CancellationToken cancellationToken)
         {
-            var token = await GetTokenForApp(tenantId);
+            if (aliasUpnOrOid.Contains('@'))
+            {
+                return aliasUpnOrOid;
+            }
 
-            var upn = await GetUpnFromAliasWithToken(token, alias, cancellationToken);
+            if (Guid.TryParse(aliasUpnOrOid, out _))
+            {
+                return aliasUpnOrOid;
+            }
 
-            return await GetProactiveChatIdForUser(token, upn, cancellationToken);
-        }
-
-        public async Task<string> GetProactiveChatIdForUserPrincipalName(string tenantId, string upn, CancellationToken cancellationToken)
-        {
-            var token = await GetTokenForApp(tenantId);
-
-            return await GetProactiveChatIdForUser(token, upn, cancellationToken);
-        }
-
-        public async Task<string> GetUpnFromAlias(string alias, string tenantId, CancellationToken cancellationToken)
-        {
-            var token = await GetTokenForApp(tenantId);
-
-            return await GetUpnFromAliasWithToken(token, alias, cancellationToken);
-        }
-
-        private async Task<string> GetUpnFromAliasWithToken(string token, string alias, CancellationToken cancellationToken)
-        {
             var graphClient = GetGraphServiceClient(token);
 
-            var users = await graphClient.Users.Request().Filter($"startswith(userPrincipalName,'{alias}@')").GetAsync(cancellationToken);
+            var users = await graphClient.Users.Request().Filter($"startswith(userPrincipalName,'{aliasUpnOrOid}@')").GetAsync(cancellationToken);
 
             var user = users.FirstOrDefault();
 
@@ -100,9 +89,15 @@ namespace TeamsTalentMgmtApp.Services
             return user.UserPrincipalName;
         }
 
-        public async Task<bool> InstallBotForUser(string tenantId, string upn, CancellationToken cancellationToken)
+        public async Task<InstallResult> InstallBotForUser(string aliasUpnOrOid, string tenantId, CancellationToken cancellationToken)
         {
             var token = await GetTokenForApp(tenantId);
+            var upn = await GetUpnFromAlias(token, aliasUpnOrOid, cancellationToken);
+
+            if (upn == null)
+            {
+                return InstallResult.AliasNotFound;
+            }
 
             var graphClient = GetGraphServiceClient(token);
 
@@ -127,12 +122,12 @@ namespace TeamsTalentMgmtApp.Services
 
                     await installBotRequest.SendAsync(
                         new TeamsAppInstallation
-                    {
-                        AdditionalData = new Dictionary<string, object>
+                        {
+                            AdditionalData = new Dictionary<string, object>
                             {
                                 { "teamsApp@odata.bind", $"https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/{teamApp.Id}" }
                             }
-                    }, cancellationToken);
+                        }, cancellationToken);
 
                     // get chat will force Welcome message where we will save information about user.
                     // https://github.com/microsoftgraph/microsoft-graph-docs/issues/5547
@@ -151,7 +146,7 @@ namespace TeamsTalentMgmtApp.Services
                 }
             }
 
-            return success;
+            return success ? InstallResult.InstallSuccess : InstallResult.InstallFailed;
         }
 
         public async Task<(Team Team, string DisplayName)> CreateNewTeamForPosition(Position position, string token, CancellationToken cancellationToken)
@@ -355,5 +350,12 @@ namespace TeamsTalentMgmtApp.Services
 
             return result.AccessToken;
         }
+    }
+
+    public enum InstallResult
+    {
+        InstallSuccess,
+        AliasNotFound,
+        InstallFailed
     }
 }

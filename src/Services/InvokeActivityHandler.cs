@@ -337,6 +337,13 @@ namespace TeamsTalentMgmtApp.Services
             var positionsTemplate = new PositionTemplateModel
             {
                 Items = new List<Position> { position },
+                ButtonActions = new List<AdaptiveAction> { 
+                    new AdaptiveOpenUrlAction
+                    {
+                        Title = "View open positions",
+                        Url = new Uri(string.Format(CommonConstants.DeepLinkUrlFormat, _appSettings.TeamsAppId, _appSettings.OpenPositionsTabEntityId, "Open Positions"))
+                    }
+                }
             };
 
             var mainCard = await _positionsTemplate.RenderTemplate(turnContext, null, TemplateConstants.PositionAsAdaptiveCardWithMultipleItems, positionsTemplate);
@@ -360,12 +367,12 @@ namespace TeamsTalentMgmtApp.Services
                 {
                     new AdaptiveSubmitAction
                     {
-                        Title = "Confirm posting",
+                        Title = "Share position",
                         Data = positionCreateCommand
                     },
                     new AdaptiveSubmitAction
                     {
-                        Title = "Cancel"
+                        Title = "Close"
                     }
                 }
             };
@@ -380,7 +387,7 @@ namespace TeamsTalentMgmtApp.Services
                     Value = new TaskModuleTaskInfo
                     {
                         Card = messageActivity.Attachments.First(),
-                        Title = "Confirm new posting",
+                        Title = "New position created",
                         Width = "medium",
                         Height = "medium"
                     }

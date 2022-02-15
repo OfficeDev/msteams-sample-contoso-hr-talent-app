@@ -38,9 +38,7 @@ namespace TeamsTalentMgmtApp.Bot.Dialogs
             var successfullyInstalled = new List<string>();
             foreach (var manager in hiringManagers)
             {
-                var upn = await _graphApiService.GetUpnFromAlias(manager.Alias, dc.Context.Activity.Conversation.TenantId, cancellationToken);
-
-                if (await _graphApiService.InstallBotForUser(dc.Context.Activity.Conversation.TenantId, upn, cancellationToken))
+                if (await _graphApiService.InstallBotForUser(manager.Alias, dc.Context.Activity.Conversation.TenantId, cancellationToken) == Services.InstallResult.InstallSuccess)
                 {
                     successfullyInstalled.Add(manager.Name);
                 }

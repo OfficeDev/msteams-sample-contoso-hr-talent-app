@@ -13,5 +13,6 @@
         public string OAuthConnectionName { get; set; }
         public string ApplicationIdUri { get; set; }
         public string ServiceUrl { get; set; }
+        public string OpenPositionsTabEntityId { get; set; }
     }
 }

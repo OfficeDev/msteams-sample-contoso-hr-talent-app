@@ -66,7 +66,7 @@ namespace TeamsTalentMgmtApp.Controllers
 
                 activity.Attachments = attachments;
 
-                await SendProactiveNotificationByAlias(recruiter.Alias, tenantId, activity, cancellationToken);
+                await SendProactiveNotification(recruiter.Alias, tenantId, activity, cancellationToken);
             }
         }
 
@@ -74,7 +74,6 @@ namespace TeamsTalentMgmtApp.Controllers
         {
             var recruiter = await _recruiterService.GetById(position.HiringManagerId, cancellationToken);
 
-            var staticTabEntityId = "OpenPositionsTab"; // you can find this value in manifest definition
             var staticTabName = "Potential candidates";
 
             var positionsTemplate = new PositionTemplateModel
@@ -85,7 +84,7 @@ namespace TeamsTalentMgmtApp.Controllers
                     new AdaptiveOpenUrlAction
                     {
                         Title = "Show all assigned positions",
-                        Url = new Uri(string.Format(CommonConstants.DeepLinkUrlFormat, _appSettings.MicrosoftAppId, staticTabEntityId, staticTabName))
+                        Url = new Uri(string.Format(CommonConstants.DeepLinkUrlFormat, _appSettings.TeamsAppId, _appSettings.OpenPositionsTabEntityId, staticTabName))
                     }
                 }
             };
@@ -94,11 +93,18 @@ namespace TeamsTalentMgmtApp.Controllers
 
             var activity = MessageFactory.Attachment(attachments);
 
-            await SendProactiveNotificationByAlias(recruiter.Alias, tenantId, activity, cancellationToken);
+            await SendProactiveNotification(recruiter.Alias, tenantId, activity, cancellationToken);
         }
 
-        private async Task<bool> SendProactiveNotification(string chatId, string tenantId, IActivity activity, CancellationToken cancellationToken)
+        public async Task<bool> SendProactiveNotification(string aliasUpnOrOid, string tenantId, IActivity activity, CancellationToken cancellationToken)
         {
+            var chatId = await _graphApiService.GetProactiveChatIdForUser(aliasUpnOrOid, tenantId, cancellationToken);
+
+            if (chatId == null)
+            {
+                return false;
+            }
+
             var credentials = new MicrosoftAppCredentials(_appSettings.MicrosoftAppId, _appSettings.MicrosoftAppPassword);
 
             var connectorClient = new ConnectorClient(new Uri(_appSettings.ServiceUrl), credentials);
@@ -114,7 +120,7 @@ namespace TeamsTalentMgmtApp.Controllers
                     Name = "This is your bot!"
                 },
                 Members = new ChannelAccount[] { members[0] },
-                TenantId = tenantId
+                TenantId = tenantId,
             };
 
             await ((CloudAdapter)_adapter).CreateConversationAsync(credentials.MicrosoftAppId, null, _appSettings.ServiceUrl, credentials.OAuthScope, conversationParameters, async (t1, c1) =>
@@ -127,30 +133,6 @@ namespace TeamsTalentMgmtApp.Controllers
             }, cancellationToken);
 
             return true;
-        }
-
-        public async Task<bool> SendProactiveNotificationByAlias(string alias, string tenantId, IActivity activityToSend, CancellationToken cancellationToken = default)
-        {
-            var chatId = await _graphApiService.GetProactiveChatIdForAlias(tenantId, alias, cancellationToken);
-
-            if (chatId == null)
-            {
-                return false;
-            }
-
-            return await SendProactiveNotification(chatId, tenantId, activityToSend, cancellationToken);
-        }
-
-        public async Task<bool> SendProactiveNotificationByUpn(string upn, string tenantId, IActivity activityToSend, CancellationToken cancellationToken = default)
-        {
-            var chatId = await _graphApiService.GetProactiveChatIdForUserPrincipalName(tenantId, upn, cancellationToken);
-
-            if (chatId == null)
-            {
-                return false;
-            }
-
-            return await SendProactiveNotification(chatId, tenantId, activityToSend, cancellationToken);
         }
     }
 }
