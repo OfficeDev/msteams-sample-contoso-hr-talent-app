@@ -232,24 +232,6 @@ namespace TeamsTalentMgmtApp.Services
             }
         }
 
-        /*
-        public async Task HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-        {
-            var connectionName = _appSettings.OAuthConnectionName;
-            var token = await ((IUserTokenProvider)turnContext.Adapter).GetUserTokenAsync(
-                turnContext,
-                connectionName,
-                query.State,
-                cancellationToken);
-            if (token != null && !string.IsNullOrEmpty(token.Token))
-            {
-                await turnContext.SendActivityAsync("You have signed in successfully. Please type command one more time.", cancellationToken: cancellationToken);
-            }
-
-            return new InvokeResponse { Status = (int)HttpStatusCode.OK };
-        }
-        */
-
         public async Task<MessagingExtensionResponse> HandleAppBasedLinkQueryAsync(
             ITurnContext<IInvokeActivity> turnContext,
             AppBasedLinkQuery query,
@@ -366,7 +348,7 @@ namespace TeamsTalentMgmtApp.Services
 
         private async Task<MessagingExtensionActionResponse> CreateConfirmJobPostingTaskModuleResponse(ITurnContext turnContext, PositionCreateCommand positionCreateCommand, CancellationToken cancellationToken)
         {
-            var position = await _positionService.AddNewPosition(positionCreateCommand, cancellationToken);
+            var position = await _positionService.AddNewPosition(turnContext.Activity.Conversation.TenantId, positionCreateCommand, cancellationToken);
 
             positionCreateCommand.CommandId = AppCommands.ConfirmCreationOfNewPosition;
             positionCreateCommand.PositionId = position.PositionId;

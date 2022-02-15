@@ -13,8 +13,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Polly;
-using Refit;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
@@ -70,10 +68,6 @@ builder.Services.AddAuthentication(options =>
         SignatureValidator = (token, s) => new JwtSecurityToken(token)
     };
 });
-
-builder.Services.AddRefitClient<IConnectorService>()
-    .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://outlook.office.com/webhook"))
-    .AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.RetryAsync(3));
 
 builder.Services.AddSingleton(bc => NullBotTelemetryClient.Instance);
 
@@ -133,7 +127,6 @@ builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IBotService, BotService>();
 builder.Services.AddTransient<IGraphApiService, GraphApiService>();
 builder.Services.AddTransient<IInvokeActivityHandler, InvokeActivityHandler>();
-builder.Services.AddTransient<INotifierService, NotifierService>();
 
 builder.Services.AddHttpClient();
 
