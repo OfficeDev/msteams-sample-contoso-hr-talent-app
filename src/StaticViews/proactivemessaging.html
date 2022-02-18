@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <meta charset="utf-8" />
+    <title>Proactive Messaging Form</title>
+    <script type="text/javascript">
+
+        function getDataFromForm(type) {
+            let methodType = type
+            let upn = document.getElementById("upn").value;
+            let tenantid = document.getElementById("tenantid").value;
+            submitToApi(upn, tenantid, methodType)
+
+        };
+
+        async function submitToApi(upn, tenantid, methodType) {
+            //generate and send request
+            let data = await fetch(window.location.origin + '/api/' + methodType, {
+                method: 'POST',
+                body: JSON.stringify({ 'id': upn, 'tenantId': tenantid })
+            });
+
+
+            //deal with response from server
+            if (data.ok) {
+                let json = await data.json();
+                console.log("HTTP Status: " + data.status);
+                console.log(json);
+                console.log(data);
+            } else {
+                console.error("HTTP-Error: " + data.status);
+            }
+
+        };
+
+    </script>
+</head>
+<body>
+    <div>
+        <h1>
+            Please submit the UPN and TenantID of the user into the form, to either Install the App, using Graph API or Send the User a proactive message, via the Bot.
+        </h1>
+    </div>
+    <form id="form1">
+        <label>UPN</label> <br>
+        <input id="upn" type="text"> <br> <br>
+        <label>TenantId</label> <br>
+        <input id="tenantid" type="text">  <br> <br>
+    </form>
+    <button id="buttonProactiveInstall" onclick="getDataFromForm('installbot')">Install Bot for User</button>
+    <button id="buttonProactiveMessage" onclick="getDataFromForm('notify')">Send User Proactive Message</button>
+
+
+
+</body>
+</html>
