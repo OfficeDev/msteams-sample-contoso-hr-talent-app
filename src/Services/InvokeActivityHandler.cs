@@ -232,24 +232,6 @@ namespace TeamsTalentMgmtApp.Services
             }
         }
 
-        /*
-        public async Task HandleSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-        {
-            var connectionName = _appSettings.OAuthConnectionName;
-            var token = await ((IUserTokenProvider)turnContext.Adapter).GetUserTokenAsync(
-                turnContext,
-                connectionName,
-                query.State,
-                cancellationToken);
-            if (token != null && !string.IsNullOrEmpty(token.Token))
-            {
-                await turnContext.SendActivityAsync("You have signed in successfully. Please type command one more time.", cancellationToken: cancellationToken);
-            }
-
-            return new InvokeResponse { Status = (int)HttpStatusCode.OK };
-        }
-        */
-
         public async Task<MessagingExtensionResponse> HandleAppBasedLinkQueryAsync(
             ITurnContext<IInvokeActivity> turnContext,
             AppBasedLinkQuery query,
@@ -355,6 +337,13 @@ namespace TeamsTalentMgmtApp.Services
             var positionsTemplate = new PositionTemplateModel
             {
                 Items = new List<Position> { position },
+                ButtonActions = new List<AdaptiveAction> { 
+                    new AdaptiveOpenUrlAction
+                    {
+                        Title = "View open positions",
+                        Url = new Uri(string.Format(CommonConstants.DeepLinkUrlFormat, _appSettings.TeamsAppId, _appSettings.OpenPositionsTabEntityId, "Open Positions"))
+                    }
+                }
             };
 
             var mainCard = await _positionsTemplate.RenderTemplate(turnContext, null, TemplateConstants.PositionAsAdaptiveCardWithMultipleItems, positionsTemplate);
@@ -366,7 +355,7 @@ namespace TeamsTalentMgmtApp.Services
 
         private async Task<MessagingExtensionActionResponse> CreateConfirmJobPostingTaskModuleResponse(ITurnContext turnContext, PositionCreateCommand positionCreateCommand, CancellationToken cancellationToken)
         {
-            var position = await _positionService.AddNewPosition(positionCreateCommand, cancellationToken);
+            var position = await _positionService.AddNewPosition(turnContext.Activity.Conversation.TenantId, positionCreateCommand, cancellationToken);
 
             positionCreateCommand.CommandId = AppCommands.ConfirmCreationOfNewPosition;
             positionCreateCommand.PositionId = position.PositionId;
@@ -378,12 +367,12 @@ namespace TeamsTalentMgmtApp.Services
                 {
                     new AdaptiveSubmitAction
                     {
-                        Title = "Confirm posting",
+                        Title = "Share position",
                         Data = positionCreateCommand
                     },
                     new AdaptiveSubmitAction
                     {
-                        Title = "Cancel"
+                        Title = "Close"
                     }
                 }
             };
@@ -398,7 +387,7 @@ namespace TeamsTalentMgmtApp.Services
                     Value = new TaskModuleTaskInfo
                     {
                         Card = messageActivity.Attachments.First(),
-                        Title = "Confirm new posting",
+                        Title = "New position created",
                         Width = "medium",
                         Height = "medium"
                     }

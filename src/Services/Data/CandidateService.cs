@@ -51,19 +51,6 @@ namespace TeamsTalentMgmtApp.Services.Data
             }
         }
 
-        public async Task UpdateCandidateStage(int candidateId, InterviewStageType newStage, CancellationToken cancellationToken = default)
-        {
-            var candidate = await GetById(candidateId, cancellationToken);
-            if (candidate != null && candidate.Stage != newStage)
-            {
-                candidate.PreviousStage = candidate.Stage;
-                candidate.Stage = newStage;
-                await _databaseContext.SaveChangesAsync(cancellationToken);
-                await _notificationService.NotifyAboutStageChange(candidate, cancellationToken);
-                await _notificationService.NotifyRecruiterAboutCandidateStageChange(candidate, cancellationToken);
-            }
-        }
-
         public async Task<ReadOnlyCollection<Candidate>> Search(string searchText, int maxResults, CancellationToken cancellationToken = default)
         {
             Candidate[] candidates;

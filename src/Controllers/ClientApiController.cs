@@ -15,6 +15,7 @@ using TeamsTalentMgmtApp.Models;
 using TeamsTalentMgmtApp.Services.Interfaces;
 using TeamsTalentMgmtApp.Models.DatabaseContext;
 using TeamsTalentMgmtApp.Models.Dto;
+using TeamsTalentMgmtApp.Models.Commands;
 
 namespace TeamsTalentMgmtApp.Controllers
 {
@@ -74,15 +75,6 @@ namespace TeamsTalentMgmtApp.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("api/candidates/")]
-        [Authorize]
-        public async Task<ActionResult> UpdateCandidateStage([FromBody] Candidate candidate, CancellationToken cancellationToken)
-        {
-            await _candidateService.UpdateCandidateStage(candidate.CandidateId, candidate.Stage, cancellationToken);
-            return Ok();
-        }
-
         [HttpGet]
         [Route("api/positions")]
         [Authorize]
@@ -125,7 +117,7 @@ namespace TeamsTalentMgmtApp.Controllers
         public async Task<ActionResult> AddFeedbackToCandidate(int id, [FromBody] CandidateFeedback candidateFeedback, CancellationToken cancellationToken)
         {
             await _candidateService.AddComment(
-                new TeamsTalentMgmtApp.Models.Commands.LeaveCommentCommand
+                new LeaveCommentCommand
                 {
                     CandidateId = id,
                     Comment = candidateFeedback.Feedback

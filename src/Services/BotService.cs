@@ -124,7 +124,7 @@ namespace TeamsTalentMgmtApp.Services
                 return null;
             }
 
-            var position = await _positionService.AddNewPosition(commandData, cancellationToken);
+            var position = await _positionService.AddNewPosition(turnContext.Activity.Conversation.TenantId, commandData, cancellationToken);
             var positionsTemplate = new PositionTemplateModel
             {
                 Items = new List<Position> { position }

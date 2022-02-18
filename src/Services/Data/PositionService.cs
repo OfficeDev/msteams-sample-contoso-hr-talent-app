@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Bot.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using TeamsTalentMgmtApp.Models.Commands;
@@ -72,7 +73,7 @@ namespace TeamsTalentMgmtApp.Services.Data
             => _positionsIncludableGetQuery
                 .FirstOrDefaultAsync(x => x.PositionId == positionId, cancellationToken);
 
-        public async Task<Position> AddNewPosition(PositionCreateCommand positionCreateCommand, CancellationToken cancellationToken)
+        public async Task<Position> AddNewPosition(string tenantId, PositionCreateCommand positionCreateCommand, CancellationToken cancellationToken)
         {
             var position = _mapper.Map<Position>(positionCreateCommand);
 
@@ -80,7 +81,7 @@ namespace TeamsTalentMgmtApp.Services.Data
             await _databaseContext.SaveChangesAsync(cancellationToken);
 
             position = await GetById(position.PositionId, cancellationToken);
-            await _notificationService.NotifyRecruiterAboutNewOpenPosition(position, cancellationToken);
+            await _notificationService.NotifyRecruiterAboutNewOpenPosition(tenantId, position, cancellationToken);
 
             return position;
         }

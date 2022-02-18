@@ -33,17 +33,12 @@ namespace TeamsTalentMgmtApp.Bot.Dialogs
             object options = null,
             CancellationToken cancellationToken = default)
         {
-            var token = await _tokenProvider.GetTokenAsync(dc.Context, cancellationToken);
-            var domain = await _graphApiService.GetDomainForUser(token, cancellationToken);
-
             var hiringManagers = await _recruiterService.GetAllHiringManagers(cancellationToken);
 
             var successfullyInstalled = new List<string>();
             foreach (var manager in hiringManagers)
             {
-                var upn = manager.Alias + "@" + domain;
-
-                if (await _graphApiService.InstallBotForUser(dc.Context.Activity.Conversation.TenantId, upn, cancellationToken))
+                if (await _graphApiService.InstallBotForUser(manager.Alias, dc.Context.Activity.Conversation.TenantId, cancellationToken) == Services.InstallResult.InstallSuccess)
                 {
                     successfullyInstalled.Add(manager.Name);
                 }

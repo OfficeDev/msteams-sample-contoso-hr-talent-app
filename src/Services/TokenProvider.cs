@@ -15,7 +15,7 @@ namespace TeamsTalentMgmtApp.Services
         }
 
         public Task<string> GetTokenAsync(ITurnContext turnContext, CancellationToken cancellationToken)
-            => _tokenAccessor.GetAsync(turnContext, cancellationToken: cancellationToken);
+            => _tokenAccessor.GetAsync(turnContext, () => null, cancellationToken: cancellationToken);
 
         public Task SetTokenAsync(string token, ITurnContext turnContext, CancellationToken cancellationToken)
             => _tokenAccessor.SetAsync(turnContext, token, cancellationToken);

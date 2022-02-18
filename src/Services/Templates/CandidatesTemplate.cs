@@ -76,7 +76,7 @@ namespace TeamsTalentMgmtApp.Services.Templates
 
             return new Attachment
             {
-                ContentType = AdaptiveCard.ContentType,
+                ContentType = FileConsentCard.ContentType,
                 Content = fileConsentCard,
                 Name = SanitizeFileName($"{candidate.Name} Summary.txt")
             };

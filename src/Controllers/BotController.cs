@@ -1,26 +1,99 @@
-﻿using System.Threading;
+﻿using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using AdaptiveCards;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Schema;
+using TeamsTalentMgmtApp.Services;
+using TeamsTalentMgmtApp.Services.Interfaces;
 
 namespace TeamsTalentMgmtApp.Controllers
 {
     [ApiController]
-    [Route("api/messages")]
     public class BotController : ControllerBase
     {
         private readonly IBot _bot;
         private readonly IBotFrameworkHttpAdapter _adapter;
+        private readonly INotificationService _notificationService;
+        private readonly IGraphApiService _graphApiService;
 
-        public BotController(IBot bot, IBotFrameworkHttpAdapter adapter)
+        public BotController(IBot bot, IBotFrameworkHttpAdapter adapter, INotificationService notificationService, IGraphApiService graphApiService)
         {
             _bot = bot;
             _adapter = adapter;
+            _notificationService = notificationService;
+            _graphApiService = graphApiService;
         }
 
         [HttpPost]
-        public Task PostAsync(CancellationToken cancellationToken)
+        [Route("api/messages")]
+        public Task PostMessageAsync(CancellationToken cancellationToken)
             => _adapter.ProcessAsync(Request, Response, _bot, cancellationToken);
+
+
+        [HttpPost]
+        [Route("api/installbot")]
+        public async Task<IActionResult> InstallAsync([FromBody] UserTenantMessageRequest request, CancellationToken cancellationToken)
+        {
+            var result = await _graphApiService.InstallBotForUser(request.Id, request.TenantId, cancellationToken);
+
+            switch (result)
+            {
+                case InstallResult.InstallFailed:
+                    return BadRequest("Installation failed");
+
+                case InstallResult.AliasNotFound:
+                    return NotFound("Alias not found");
+            }
+
+            return Accepted();
+        }
+
+        [HttpPost]
+        [Route("api/notify")]
+        public async Task<IActionResult> NotifyAsync([FromBody] NotifyRequest request, CancellationToken cancellationToken)
+        {
+            IActivity activity;
+
+            if (request.Text != null)
+            {
+                activity = MessageFactory.Text(request.Text);
+            }
+            else
+            {
+                var card = AdaptiveCard.FromJson(request.Card.ToString()).Card;
+
+                activity = MessageFactory.Attachment(new Attachment
+                {
+                    Content = card,
+                    ContentType = AdaptiveCard.ContentType
+                });
+            }
+                        
+            var success = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
+            
+
+            if (!success)
+            {
+                // Precondition failed - app not installed!
+                return StatusCode(412);
+            }
+
+            return Accepted();
+        }
+    }
+
+    public class UserTenantMessageRequest
+    {
+        public string Id { get; set; }
+        public string TenantId { get; set; }
+    }
+
+    public class NotifyRequest : UserTenantMessageRequest
+    {
+        public JsonElement Card { get; set; }
+        public string Text { get; set; }
     }
 }
