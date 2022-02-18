@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
+using Microsoft.Identity.Client;
 using TeamsTalentMgmtApp.Services;
 using TeamsTalentMgmtApp.Services.Interfaces;
 
@@ -37,15 +38,23 @@ namespace TeamsTalentMgmtApp.Controllers
         [Route("api/installbot")]
         public async Task<IActionResult> InstallAsync([FromBody] UserTenantMessageRequest request, CancellationToken cancellationToken)
         {
-            var result = await _graphApiService.InstallBotForUser(request.Id, request.TenantId, cancellationToken);
-
-            switch (result)
+            try
             {
-                case InstallResult.InstallFailed:
-                    return BadRequest("Installation failed");
+                var result = await _graphApiService.InstallBotForUser(request.Id, request.TenantId, cancellationToken);
 
-                case InstallResult.AliasNotFound:
-                    return NotFound("Alias not found");
+                switch (result)
+                {
+                    case InstallResult.InstallFailed:
+                        return BadRequest("Installation failed");
+
+                    case InstallResult.AliasNotFound:
+                        return NotFound("Alias not found");
+                }
+
+            }
+            catch (Microsoft.Graph.ServiceException ex)
+            {
+                return StatusCode((int)ex.StatusCode);
             }
 
             return Accepted();
@@ -55,30 +64,37 @@ namespace TeamsTalentMgmtApp.Controllers
         [Route("api/notify")]
         public async Task<IActionResult> NotifyAsync([FromBody] NotifyRequest request, CancellationToken cancellationToken)
         {
-            IActivity activity;
-
-            if (request.Text != null)
+            try
             {
-                activity = MessageFactory.Text(request.Text);
-            }
-            else
-            {
-                var card = AdaptiveCard.FromJson(request.Card.ToString()).Card;
+                IActivity activity;
 
-                activity = MessageFactory.Attachment(new Attachment
+                if (request.Text != null)
                 {
-                    Content = card,
-                    ContentType = AdaptiveCard.ContentType
-                });
-            }
-                        
-            var success = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
-            
+                    activity = MessageFactory.Text(request.Text);
+                }
+                else
+                {
+                    var card = AdaptiveCard.FromJson(request.Card.ToString()).Card;
 
-            if (!success)
+                    activity = MessageFactory.Attachment(new Attachment
+                    {
+                        Content = card,
+                        ContentType = AdaptiveCard.ContentType
+                    });
+                }
+
+                var success = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
+
+
+                if (!success)
+                {
+                    // Precondition failed - app not installed!
+                    return StatusCode(412);
+                }
+            }
+            catch (Microsoft.Graph.ServiceException ex)
             {
-                // Precondition failed - app not installed!
-                return StatusCode(412);
+                return StatusCode((int)ex.StatusCode);
             }
 
             return Accepted();
