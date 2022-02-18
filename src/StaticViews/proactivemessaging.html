@@ -2,6 +2,7 @@
 <html>
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="/config.js"></script>
     <meta charset="utf-8" />
     <title>Proactive Messaging Form</title>
     <script type="text/javascript">
@@ -18,7 +19,10 @@
             //generate and send request
             let data = await fetch(window.location.origin + '/api/' + methodType, {
                 method: 'POST',
-                body: JSON.stringify({ 'id': upn, 'tenantId': tenantid })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'id': upn, 'tenantId': tenantid, 'text': 'hello' })
             });
 
 
@@ -30,9 +34,38 @@
                 console.log(data);
             } else {
                 console.error("HTTP-Error: " + data.status);
+                //if API controller responds with error status of 403, then consent is required. Display consent button using jQuery
+                if (data.status == '403') {
+                    $("#consentRequired").show();
+                }
             }
 
         };
+        
+
+
+        function redirectToAdminConsent() {
+            let clientId = window.global.microsoftAppId;
+            let redirectUri = window.location.origin + "/StaticViews/ProactiveMessaging.html";
+            let adminConsentURL = 'https://login.microsoftonline.com/common/adminconsent?client_id=' + clientId + '&redirect_uri=' + redirectUri;
+            console.log(adminConsentURL);
+            window.location.assign(adminConsentURL);
+        }
+
+        $(() => {
+
+            //logic to capture succesful or unsuccesful consent
+            var urlParams = new URLSearchParams(window.location.search);
+            //console.log(urlParams.get('admin_consent'));
+            var adminConsent = urlParams.get('admin_consent');
+            console.log(adminConsent);
+            if (adminConsent == 'true') {
+                console.log($("#adminConsentSuccesful").length);
+                $("#adminConsentSuccesful").show();
+            }
+
+        });
+
 
     </script>
 </head>
@@ -49,9 +82,17 @@
         <input id="tenantid" type="text">  <br> <br>
     </form>
     <button id="buttonProactiveInstall" onclick="getDataFromForm('installbot')">Install Bot for User</button>
-    <button id="buttonProactiveMessage" onclick="getDataFromForm('notify')">Send User Proactive Message</button>
+    <button id="buttonProactiveMessage" onclick="getDataFromForm('notify')">Send 'hello' to user via Bot Proactive Message</button>
+    <br />
+    <br />
+    <br />
+    <div id="consentRequired" style="display: none;">
+        403 Forbidden error - Consent must be granted to allow Proactive Install/Messaging. Please click the below button to grant Consent and then try again.
+        <button id="buttonConsent" onclick="redirectToAdminConsent();">Grant Consent</button>
+    </div>
 
-
-
+    <div id="adminConsentSuccesful" style="display: none;">
+        Admin Consent succesful, please try to Proactively Install/Message again!
+    </div>
 </body>
 </html>
