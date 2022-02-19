@@ -9,9 +9,12 @@
 
         //gets the data from the form (UPN & TenantId)
         function getDataFromForm(type) {
+            $("#adminConsentSuccessful, #successfulRequest, #consentRequired, #UPNdoesntexist ,#installRequired ,#badRequest, #serverError").hide();
+
             let methodType = type
             let upn = document.getElementById("upn").value;
             let tenantid = document.getElementById("tenantid").value;
+            $("#sendingRequest").show();
             //calls the submitToApi function and passes into the function the form values
             submitToApi(upn, tenantid, methodType)
 
@@ -26,6 +29,8 @@
                 },
                 body: JSON.stringify({ 'id': upn, 'tenantId': tenantid, 'text': 'hello' })
             });
+
+            $("#sendingRequest").hide();
 
 
             //deal with response from server
@@ -53,6 +58,9 @@
                 if (data.status == '400') {
                     $("#badRequest").show();
                 }
+                if (data.status == '500') {
+                    $("#serverError").show();
+                }
             }
 
         };
@@ -72,8 +80,8 @@
             
             var urlParams = new URLSearchParams(window.location.search);
             var adminConsent = urlParams.get('admin_consent');
-            if (adminConsent == 'true') {
-                $("#adminConsentSuccesful").show();
+            if (adminConsent == 'True') {
+                $("#adminConsentSuccessful").show();
             }
 
         });
@@ -99,6 +107,10 @@
     <br />
     <br />
 
+    <div id="sendingRequest" style="display: none;">
+        Sending request...
+    </div>
+
     <div id="successfulRequest" style="display: none;">
         202 Success! Please login to Teams as the targetted user to review.
     </div>
@@ -108,8 +120,8 @@
         <button id="buttonConsent" onclick="redirectToAdminConsent();">Grant Consent</button>
     </div>
 
-    <div id="adminConsentSuccesful" style="display: none;">
-        Admin Consent succesful, please try to Proactively Install/Message again!
+    <div id="adminConsentSuccessful" style="display: none;">
+        Admin Consent successful, please try to Proactively Install/Message again!
     </div>
 
     <div id="UPNdoesntexist" style="display: none;">
@@ -122,6 +134,10 @@
 
     <div id="badRequest" style="display: none;">
         400 Bad Request error - Something went wrong with the request, please review the network developer tools to review the request, and try again.
+    </div>
+
+    <div id="serverError" style="display: none;">
+        500 Server error - Something went wrong, please review the network developer tools to review the request, and add a breakpoint to the controller endpoint to see what's causing the issue.
     </div>
 
 </body>
