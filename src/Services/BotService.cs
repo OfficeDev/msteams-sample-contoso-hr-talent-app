@@ -31,6 +31,7 @@ namespace TeamsTalentMgmtApp.Services
         private readonly PositionsTemplate _positionsTemplate;
         private readonly NewJobPostingToAdaptiveCardTemplate _newJobPostingTemplate;
         private readonly CandidatesTemplate _candidatesTemplate;
+        private readonly IStatePropertyAccessor<bool> _welcomeMessageState;
 
         public BotService(
             IOptions<AppSettings> appSettings,
@@ -43,7 +44,8 @@ namespace TeamsTalentMgmtApp.Services
             ITokenProvider tokenProvider,
             CandidatesTemplate candidatesTemplate,
             PositionsTemplate positionsTemplate,
-            NewJobPostingToAdaptiveCardTemplate newJobPostingTemplate)
+            NewJobPostingToAdaptiveCardTemplate newJobPostingTemplate,
+            UserState userState)
         {
             _appSettings = appSettings.Value;
             _httpClientFactory = httpClientFactory;
@@ -56,6 +58,12 @@ namespace TeamsTalentMgmtApp.Services
             _candidatesTemplate = candidatesTemplate;
             _positionsTemplate = positionsTemplate;
             _newJobPostingTemplate = newJobPostingTemplate;
+
+            // When sending a proactive message without first storing the conversation reference
+            // we need to call CreateConversationAsync which results in a ConversationUpdate activity being
+            // sent to the bot with new members - because we can now receive MembersAddedAsync more than once
+            // we need to cache whether the user has already been welcomed.
+            _welcomeMessageState = userState.CreateProperty<bool>("SeenWelcomeMessage");
         }
 
         public async Task HandleMembersAddedAsync(
@@ -72,19 +80,36 @@ namespace TeamsTalentMgmtApp.Services
             {
                 if (turnContext.Activity.Conversation.IsGroup != true)
                 {
-                    var card = new HeroCard
+                    // Check to see if we've already sent this user the welcome message since the last installation
+                    // update
+                    if (!await _welcomeMessageState.GetAsync(turnContext, cancellationToken: cancellationToken))
                     {
-                        Title = "Hi, I'm Talent bot!",
-                        Text = "I can assist you with creating new job postings, get details about your candidates, open positions and notify about your candidates stage updates. If you are admin, you can install bot for hiring managers.",
-                        Buttons = new List<CardAction>
+                        var card = new HeroCard
                         {
-                            new CardAction(ActionTypes.ImBack, value: BotCommands.HelpDialogCommand, title: "Help")
-                        }
-                    };
+                            Title = "Hi, I'm Talent bot!",
+                            Text = "I can assist you with creating new job postings, get details about your candidates, open positions and notify about your candidates stage updates. If you are admin, you can install bot for hiring managers.",
+                            Buttons = new List<CardAction>
+                            {
+                                new CardAction(ActionTypes.ImBack, value: BotCommands.HelpDialogCommand, title: "Help")
+                            }
+                        };
 
-                    await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
+                        await turnContext.SendActivityAsync(MessageFactory.Attachment(card.ToAttachment()), cancellationToken);
+
+                        // Cache the fact that the user has now been sent the welcome message.
+                        // They will now not see this again until either the state is removed or
+                        // the installation state changes
+                        await _welcomeMessageState.SetAsync(turnContext, true, cancellationToken);
+                    }
                 }
             }
+        }
+
+        public async Task HandleInstallationUpdateAsync(ITurnContext<IInstallationUpdateActivity> turnContext, CancellationToken cancellationToken)
+        {
+            // Whenever something changes with the installation, new, update or uninstalled
+            // we want to reset the cached state that checks whether the user has seen the welcome message
+            await _welcomeMessageState.SetAsync(turnContext, false, cancellationToken);
         }
 
         public async Task<IMessageActivity> LeaveInternalCommentAsync(

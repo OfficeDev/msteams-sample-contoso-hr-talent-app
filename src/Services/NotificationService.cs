@@ -116,8 +116,7 @@ namespace TeamsTalentMgmtApp.Controllers
                 IsGroup = false,
                 Bot = new ChannelAccount
                 {
-                    Id = "28:" + credentials.MicrosoftAppId,
-                    Name = "This is your bot!"
+                    Id = "28:" + credentials.MicrosoftAppId
                 },
                 Members = new ChannelAccount[] { members[0] },
                 TenantId = tenantId,

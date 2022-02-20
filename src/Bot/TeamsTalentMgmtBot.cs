@@ -62,6 +62,9 @@ namespace TeamsTalentMgmtApp.Bot
         protected override Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
             => _botService.HandleMembersAddedAsync(turnContext, membersAdded, cancellationToken);
 
+        protected override Task OnInstallationUpdateActivityAsync(ITurnContext<IInstallationUpdateActivity> turnContext, CancellationToken cancellationToken)
+            => _botService.HandleInstallationUpdateAsync(turnContext, cancellationToken);
+
         protected override Task<MessagingExtensionResponse> OnTeamsAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleAppBasedLinkQueryAsync(turnContext, query, cancellationToken);
 

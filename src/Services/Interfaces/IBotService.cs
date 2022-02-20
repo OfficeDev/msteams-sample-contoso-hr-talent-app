@@ -13,6 +13,10 @@ namespace TeamsTalentMgmtApp.Services.Interfaces
             IList<ChannelAccount> membersAdded,
             CancellationToken cancellationToken);
 
+        Task HandleInstallationUpdateAsync(
+            ITurnContext<IInstallationUpdateActivity> turnContext,
+            CancellationToken cancellationToken);
+
         Task<IMessageActivity> OpenPositionAsync(
             ITurnContext turnContext,
             CancellationToken cancellationToken);
