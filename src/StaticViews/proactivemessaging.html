@@ -7,16 +7,21 @@
     <title>Proactive Messaging Form</title>
     <script type="text/javascript">
 
+        //gets the data from the form (UPN & TenantId)
         function getDataFromForm(type) {
+            $("#adminConsentSuccessful, #successfulRequest, #consentRequired, #UPNdoesntexist ,#installRequired ,#badRequest, #serverError").hide();
+
             let methodType = type
             let upn = document.getElementById("upn").value;
             let tenantid = document.getElementById("tenantid").value;
+            $("#sendingRequest").show();
+            //calls the submitToApi function and passes into the function the form values
             submitToApi(upn, tenantid, methodType)
 
         };
 
         async function submitToApi(upn, tenantid, methodType) {
-            //generate and send request
+            //generate and send request to api controllers
             let data = await fetch(window.location.origin + '/api/' + methodType, {
                 method: 'POST',
                 headers: {
@@ -25,6 +30,8 @@
                 body: JSON.stringify({ 'id': upn, 'tenantId': tenantid, 'text': 'hello' })
             });
 
+            $("#sendingRequest").hide();
+
 
             //deal with response from server
             if (data.ok) {
@@ -32,18 +39,33 @@
                 console.log("HTTP Status: " + data.status);
                 console.log(json);
                 console.log(data);
+                if (data.status == '202') {
+                    $("#successfulRequest").show();
+                }
+                
             } else {
                 console.error("HTTP-Error: " + data.status);
-                //if API controller responds with error status of 403, then consent is required. Display consent button using jQuery
+                
                 if (data.status == '403') {
                     $("#consentRequired").show();
+                }
+                if (data.status == '404') {
+                    $("#UPNdoesntexist").show();
+                }
+                if (data.status == '412') {
+                    $("#installRequired").show();
+                }
+                if (data.status == '400') {
+                    $("#badRequest").show();
+                }
+                if (data.status == '500') {
+                    $("#serverError").show();
                 }
             }
 
         };
-        
 
-
+        //redirects to the Admin Consent URL, if the Grant Consent button is clicked
         function redirectToAdminConsent() {
             let clientId = window.global.microsoftAppId;
             let redirectUri = window.location.origin + "/StaticViews/ProactiveMessaging.html";
@@ -52,13 +74,14 @@
             window.location.assign(adminConsentURL);
         }
 
+        //logic to capture succesful or unsuccesful consent after redirect back from Azure AD
         $(() => {
 
-            //logic to capture succesful or unsuccesful consent
+            
             var urlParams = new URLSearchParams(window.location.search);
             var adminConsent = urlParams.get('admin_consent');
-            if (adminConsent == 'true') {
-                $("#adminConsentSuccesful").show();
+            if (adminConsent == 'True') {
+                $("#adminConsentSuccessful").show();
             }
 
         });
@@ -83,13 +106,39 @@
     <br />
     <br />
     <br />
+
+    <div id="sendingRequest" style="display: none;">
+        Sending request...
+    </div>
+
+    <div id="successfulRequest" style="display: none;">
+        202 Success! Please login to Teams as the targetted user to review.
+    </div>
+
     <div id="consentRequired" style="display: none;">
         403 Forbidden error - Consent must be granted to allow Proactive Install/Messaging. Please click the below button to grant Consent and then try again.
         <button id="buttonConsent" onclick="redirectToAdminConsent();">Grant Consent</button>
     </div>
 
-    <div id="adminConsentSuccesful" style="display: none;">
-        Admin Consent succesful, please try to Proactively Install/Message again!
+    <div id="adminConsentSuccessful" style="display: none;">
+        Admin Consent successful, please try to Proactively Install/Message again!
     </div>
+
+    <div id="UPNdoesntexist" style="display: none;">
+        404 Forbidden error - user alias / upn doesn't exist in tenant - Please review the details your submitted and try again.
+    </div>
+
+    <div id="installRequired" style="display: none;">
+        412 Precondition failed error - The app, that contains the bot, must be installed before you can proactivelly message the user. Press the 'Install Bot for User' button first.
+    </div>
+
+    <div id="badRequest" style="display: none;">
+        400 Bad Request error - Something went wrong with the request, please review the network developer tools to review the request, and try again.
+    </div>
+
+    <div id="serverError" style="display: none;">
+        500 Server error - Something went wrong, please review the network developer tools to review the request, and add a breakpoint to the controller endpoint to see what's causing the issue.
+    </div>
+
 </body>
 </html>
