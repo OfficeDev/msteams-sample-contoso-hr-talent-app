@@ -56,11 +56,8 @@
 
             //logic to capture succesful or unsuccesful consent
             var urlParams = new URLSearchParams(window.location.search);
-            //console.log(urlParams.get('admin_consent'));
             var adminConsent = urlParams.get('admin_consent');
-            console.log(adminConsent);
             if (adminConsent == 'true') {
-                console.log($("#adminConsentSuccesful").length);
                 $("#adminConsentSuccesful").show();
             }
 

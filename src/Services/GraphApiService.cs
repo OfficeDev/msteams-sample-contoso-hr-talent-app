@@ -42,7 +42,12 @@ namespace TeamsTalentMgmtApp.Services
         {
             var token = await GetTokenForApp(tenantId);
             var graphClient = GetGraphServiceClient(token);
+
             var upn = await GetUpnFromAlias(token, aliasUpnOrOid, cancellationToken);
+            if (upn == null)
+            {
+                return null;
+            }
 
             var installedApps = await graphClient.Users[upn].Teamwork.InstalledApps
                 .Request()
@@ -77,7 +82,10 @@ namespace TeamsTalentMgmtApp.Services
 
             var graphClient = GetGraphServiceClient(token);
 
-            var users = await graphClient.Users.Request().Filter($"startswith(userPrincipalName,'{aliasUpnOrOid}@')").GetAsync(cancellationToken);
+            var users = await graphClient.Users.
+                Request().
+                Filter($"startswith(userPrincipalName,'{aliasUpnOrOid}@')").
+                GetAsync(cancellationToken);
 
             var user = users.FirstOrDefault();
 
@@ -101,9 +109,7 @@ namespace TeamsTalentMgmtApp.Services
 
             var graphClient = GetGraphServiceClient(token);
 
-            var teamsApps = await graphClient
-                .AppCatalogs
-                .TeamsApps
+            var teamsApps = await graphClient.AppCatalogs.TeamsApps
                 .Request()
                 .Filter($"distributionMethod eq 'organization' and externalId eq '{_appSettings.TeamsAppId}'")
                 .GetAsync(cancellationToken);
