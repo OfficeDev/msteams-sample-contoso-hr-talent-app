@@ -9,8 +9,6 @@ The lab file is attached, but it would require extra steps on your part to setup
 
 This app simulates connection to a recruiting and talent management system and allows users and teams to create, manage and search positions and candidates. The content is randomly generated to simulate what you can do with Teams. The full source code is provided, along with the app package and manifest that you can use to side load and test in your Teams environment.
 
-**For more information on developing apps for Microsoft Teams, please review the Microsoft Teams [developer documentation](https://msdn.microsoft.com/en-us/microsoft-teams/index).**
-
 ## Prerequisites
 Please see the Teams Apps Talent Management Lab.pdf document for a detailed list of Pre-requisites.
 
