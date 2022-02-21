@@ -55,7 +55,7 @@ namespace TeamsTalentMgmtApp.Controllers
                 return StatusCode((int)ex.StatusCode);
             }
 
-            return Accepted();
+            return Ok();
         }
 
         [HttpPost]

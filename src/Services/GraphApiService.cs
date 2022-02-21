@@ -147,6 +147,11 @@ namespace TeamsTalentMgmtApp.Services
 
                     success = true;
                 }
+                catch (ServiceException svcEx) when (svcEx.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    // Do nothing, just say it was successful because the user already had the bot installed
+                    success = true;
+                }
                 catch (Exception ex)
                 {
                     // We don't want to show any exception for user in this case.
@@ -339,21 +344,6 @@ namespace TeamsTalentMgmtApp.Services
             var client = builder.Build();
 
             var tokenBuilder = client.AcquireTokenForClient(new[] { "https://graph.microsoft.com/.default" });
-
-            var result = await tokenBuilder.ExecuteAsync();
-
-            return result.AccessToken;
-        }
-
-        private async Task<string> GetOnBehalfOfToken(string token)
-        {
-            var builder = ConfidentialClientApplicationBuilder.Create(_configuration["MicrosoftAppId"])
-                .WithClientSecret(_configuration["MicrosoftAppPassword"]);
-
-            var client = builder.Build();
-
-            //Calls the /oauth2/v2.0/token endpoint to swap the given AAD token for another with different scopes
-            var tokenBuilder = client.AcquireTokenOnBehalfOf(new[] { "profile" }, new UserAssertion(token));
 
             var result = await tokenBuilder.ExecuteAsync();
 
