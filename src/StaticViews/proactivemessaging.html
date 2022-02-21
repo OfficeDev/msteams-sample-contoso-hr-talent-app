@@ -95,11 +95,11 @@
             Please submit the UPN and TenantID of the user into the form, to either Install the App, using Graph API or Send the User a proactive message, via the Bot.
         </h1>
     </div>
-    <form id="form1">
+    <form id="form1" >
         <label>UPN</label> <br>
-        <input id="upn" type="text"> <br> <br>
+        <input id="upn" type="text" size="40" placeholder="alias@domain.com"> <br> <br>
         <label>TenantId</label> <br>
-        <input id="tenantid" type="text">  <br> <br>
+        <input id="tenantid" type="text" size="40" placeholder="GUID of TenantID">  <br> <br>
     </form>
     <button id="buttonProactiveInstall" onclick="getDataFromForm('installbot')">Install Bot for User</button>
     <button id="buttonProactiveMessage" onclick="getDataFromForm('notify')">Send 'hello' to user via Bot Proactive Message</button>
