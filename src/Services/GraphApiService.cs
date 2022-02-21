@@ -38,7 +38,7 @@ namespace TeamsTalentMgmtApp.Services
             _databaseContext = databaseContext;
         }
 
-        public async Task<string> GetProactiveChatIdForUser(string aliasUpnOrOid, string tenantId, CancellationToken cancellationToken)
+        public async Task<(string upn, string chatId)> GetProactiveChatIdForUser(string aliasUpnOrOid, string tenantId, CancellationToken cancellationToken)
         {
             var token = await GetTokenForApp(tenantId);
             var graphClient = GetGraphServiceClient(token);
@@ -46,7 +46,7 @@ namespace TeamsTalentMgmtApp.Services
             var upn = await GetUpnFromAlias(token, aliasUpnOrOid, cancellationToken);
             if (upn == null)
             {
-                return null;
+                return (null, null);
             }
 
             var installedApps = await graphClient.Users[upn].Teamwork.InstalledApps
@@ -58,14 +58,14 @@ namespace TeamsTalentMgmtApp.Services
             var app = installedApps.FirstOrDefault();
             if (app == null)
             {
-                return null;
+                return (upn, null);
             }
 
             var chat = await graphClient.Users[upn].Teamwork.InstalledApps[app.Id].Chat
                 .Request()
                 .GetAsync(cancellationToken);
 
-            return chat.Id;
+            return (upn, chat.Id);
         }
 
         private async Task<string> GetUpnFromAlias(string token, string aliasUpnOrOid, CancellationToken cancellationToken)
@@ -356,12 +356,5 @@ namespace TeamsTalentMgmtApp.Services
 
             return result.AccessToken;
         }
-    }
-
-    public enum InstallResult
-    {
-        InstallSuccess,
-        AliasNotFound,
-        InstallFailed
     }
 }

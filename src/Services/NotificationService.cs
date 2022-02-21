@@ -96,13 +96,18 @@ namespace TeamsTalentMgmtApp.Controllers
             await SendProactiveNotification(recruiter.Alias, tenantId, activity, cancellationToken);
         }
 
-        public async Task<bool> SendProactiveNotification(string aliasUpnOrOid, string tenantId, IActivity activity, CancellationToken cancellationToken)
+        public async Task<NotificationResult> SendProactiveNotification(string aliasUpnOrOid, string tenantId, IActivity activity, CancellationToken cancellationToken)
         {
-            var chatId = await _graphApiService.GetProactiveChatIdForUser(aliasUpnOrOid, tenantId, cancellationToken);
+            var (upn, chatId) = await _graphApiService.GetProactiveChatIdForUser(aliasUpnOrOid, tenantId, cancellationToken);
+
+            if (upn == null)
+            {
+                return NotificationResult.AliasNotFound;
+            }
 
             if (chatId == null)
             {
-                return false;
+                return NotificationResult.BotNotInstalled;
             }
 
             var credentials = new MicrosoftAppCredentials(_appSettings.MicrosoftAppId, _appSettings.MicrosoftAppPassword);
@@ -131,7 +136,7 @@ namespace TeamsTalentMgmtApp.Controllers
                 }, cancellationToken);
             }, cancellationToken);
 
-            return true;
+            return NotificationResult.Success;
         }
     }
 }

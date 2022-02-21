@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
-using Microsoft.Identity.Client;
-using TeamsTalentMgmtApp.Services;
 using TeamsTalentMgmtApp.Services.Interfaces;
 
 namespace TeamsTalentMgmtApp.Controllers
@@ -48,7 +46,7 @@ namespace TeamsTalentMgmtApp.Controllers
                         return BadRequest("Installation failed");
 
                     case InstallResult.AliasNotFound:
-                        return NotFound("Alias not found");
+                        return NotFound($"Alias '{request.Id}' was not found in the tenant '{request.TenantId}'");
                 }
 
             }
@@ -83,13 +81,18 @@ namespace TeamsTalentMgmtApp.Controllers
                     });
                 }
 
-                var success = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
+                var result = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
 
+                if (result == NotificationResult.AliasNotFound)
+                {
+                    // Alias not found
+                    return NotFound($"Alias '{request.Id}' was not found in the tenant '{request.TenantId}'");
+                }
 
-                if (!success)
+                if (result == NotificationResult.BotNotInstalled)
                 {
                     // Precondition failed - app not installed!
-                    return StatusCode(412);
+                    return StatusCode(412, $"The bot has not been installed for '{request.Id}' in the tenant '{request.TenantId}'");
                 }
             }
             catch (Microsoft.Graph.ServiceException ex)
