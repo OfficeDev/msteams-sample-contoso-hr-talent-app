@@ -15,12 +15,6 @@ Please see the Teams Apps Talent Management Lab.pdf document for a detailed list
 ## How to use this lab
 Open the Teams Apps Talent Management Lab.pdf document, and start working through the guidance in this document. This guide will walk you through, step-by-step, with screenshots, the setup of the app (in Visual Studio, using NGROK as the tunnel) and the setup of the Teams app, which will introduce you to how the various interfaces in Teams work when surfacing a third-party app within Teams (Tabs, Bots, Messaging Extensions, Azure AD SSO, Proactive Messaging & Graph API).
 
-## More Information
-For more information about getting started with Teams, please review the following resources:
-- Review [Getting Started with Teams](https://msdn.microsoft.com/en-us/microsoft-teams/setup)
-- Review [Getting Started with Bot Framework](https://docs.microsoft.com/en-us/bot-framework/bot-builder-overview-getstarted)
-- Review [Testing your bot with Teams](https://msdn.microsoft.com/en-us/microsoft-teams/botsadd)
-
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
