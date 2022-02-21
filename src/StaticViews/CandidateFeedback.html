@@ -11,6 +11,7 @@
     <script type="text/javascript" src="js/common.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css" />
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css" />
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.components.min.css" />
 
     <style type="text/css">
         .teams {
@@ -184,9 +185,18 @@
             right: -20%;
             top: -10%;
         }
+
+        .close-button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 
     <script>
+
+        function closeTaskModule() {
+            microsoftTeams.tasks.submitTask(null);
+        }
 
         async function loadPage() {
             var candidateId = getQueryStringValue('candidateId');
@@ -445,6 +455,12 @@
                 <div class="ms-sm4 ms-Grid-col">Feedback</div>
             </div>
             <div id="upcoming-rows"></div>
+        </div>
+
+        <div class="close-button-container">
+            <button class="ms-Button" onclick="closeTaskModule()">
+                <span class="ms-Button-Label">Close</span>
+            </button>
         </div>
     </div>
 </body>
