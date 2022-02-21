@@ -41,6 +41,12 @@ namespace TeamsTalentMgmtApp.Services
         public async Task<(string upn, string chatId)> GetProactiveChatIdForUser(string aliasUpnOrOid, string tenantId, CancellationToken cancellationToken)
         {
             var token = await GetTokenForApp(tenantId);
+
+            return await GetProactiveChatIdForUserInternal(token, aliasUpnOrOid, tenantId, cancellationToken);
+        }
+
+        private async Task<(string upn, string chatId)> GetProactiveChatIdForUserInternal(string token, string aliasUpnOrOid, string tenantId, CancellationToken cancellationToken)
+        {
             var graphClient = GetGraphServiceClient(token);
 
             var upn = await GetUpnFromAlias(token, aliasUpnOrOid, cancellationToken);
@@ -135,12 +141,9 @@ namespace TeamsTalentMgmtApp.Services
                             }
                         }, cancellationToken);
 
-                    // get chat will force Welcome message where we will save information about user.
-                    // https://github.com/microsoftgraph/microsoft-graph-docs/issues/5547
-                    await new BaseRequest($"https://graph.microsoft.com/v1.0/users/{upn}/chats?$filter=installedApps/any(a:a/teamsApp/id eq '{teamApp.Id}')", graphClient)
-                    {
-                        Method = HttpMethods.GET
-                    }.SendAsync(null, cancellationToken);
+
+                    // Getting the chat id will confirm the installation was successful and send the welcome message
+                    await GetProactiveChatIdForUserInternal(token, aliasUpnOrOid, tenantId, cancellationToken);
 
                     success = true;
                 }
