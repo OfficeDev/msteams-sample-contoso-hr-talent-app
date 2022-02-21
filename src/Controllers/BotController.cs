@@ -34,7 +34,9 @@ namespace TeamsTalentMgmtApp.Controllers
 
         [HttpPost]
         [Route("api/installbot")]
-        public async Task<IActionResult> InstallAsync([FromBody] UserTenantMessageRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> InstallAsync(
+            [FromBody] UserTenantMessageRequest request, 
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -60,7 +62,9 @@ namespace TeamsTalentMgmtApp.Controllers
 
         [HttpPost]
         [Route("api/notify")]
-        public async Task<IActionResult> NotifyAsync([FromBody] NotifyRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> NotifyAsync(
+            [FromBody] NotifyRequest request, 
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -81,7 +85,11 @@ namespace TeamsTalentMgmtApp.Controllers
                     });
                 }
 
-                var result = await _notificationService.SendProactiveNotification(request.Id, request.TenantId, activity, cancellationToken);
+                var result = await _notificationService.SendProactiveNotification(
+                    request.Id, 
+                    request.TenantId, 
+                    activity, 
+                    cancellationToken);
 
                 if (result == NotificationResult.AliasNotFound)
                 {
@@ -92,7 +100,9 @@ namespace TeamsTalentMgmtApp.Controllers
                 if (result == NotificationResult.BotNotInstalled)
                 {
                     // Precondition failed - app not installed!
-                    return StatusCode(412, $"The bot has not been installed for '{request.Id}' in the tenant '{request.TenantId}'");
+                    return StatusCode(
+                        412, 
+                        $"The bot has not been installed for '{request.Id}' in the tenant '{request.TenantId}'");
                 }
             }
             catch (Microsoft.Graph.ServiceException ex)
