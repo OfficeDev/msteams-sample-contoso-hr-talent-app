@@ -39,7 +39,7 @@
                 console.log("HTTP Status: " + data.status);
                 console.log(json);
                 console.log(data);
-                if (data.status == '202') {
+                if (data.status == '200') {
                     $("#successfulRequest").show();
                 }
                 
@@ -112,7 +112,7 @@
     </div>
 
     <div id="successfulRequest" style="display: none;">
-        202 Success! Please login to Teams as the targetted user to review.
+        200 Success! Please login to Teams as the targetted user to review.
     </div>
 
     <div id="consentRequired" style="display: none;">
