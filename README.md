@@ -9,20 +9,13 @@ The lab file is attached, but it would require extra steps on your part to setup
 
 This app simulates connection to a recruiting and talent management system and allows users and teams to create, manage and search positions and candidates. The content is randomly generated to simulate what you can do with Teams. The full source code is provided, along with the app package and manifest that you can use to side load and test in your Teams environment.
 
-This .NET/C# sample only shows the Bot, Tab, and Messaging Extension portion of the sample.
-
 **For more information on developing apps for Microsoft Teams, please review the Microsoft Teams [developer documentation](https://msdn.microsoft.com/en-us/microsoft-teams/index).**
 
 ## Prerequisites
-The minimum prerequisites to run this sample are:
-* The latest update of Visual Studio. You can download the community version [here](http://www.visualstudio.com) for free.
-* An Office 365 account with access to Microsoft Teams, with [sideloading enabled](https://msdn.microsoft.com/en-us/microsoft-teams/setup).
-* Ngrok, a tool to run your app service locally within Teams, available [here](https://ngrok.com/).
+Please see the Teams Apps Talent Management Lab.pdf document for a detailed list of Pre-requisites.
 
->**Note**: some features in the sample require that you [enable Public Developer Preview mode](https://msdn.microsoft.com/en-us/microsoft-teams/publicpreview) in Microsoft Teams.
-
-For more information about how to configure and test our samples, see [Sample applications for the Microsoft Teams Developer Platform](https://msdn.microsoft.com/en-us/microsoft-teams/samples).
-
+## How to use this lab
+Open the Teams Apps Talent Management Lab.pdf document, and start working through the guidance in this document. This guide will walk you through, step-by-step, with screenshots, the setup of the app (in Visual Studio, using NGROK as the tunnel) and the setup of the Teams app, which will introduce you to how the various interfaces in Teams work when surfacing a third-party app within Teams (Tabs, Bots, Messaging Extensions, Azure AD SSO, Proactive Messaging & Graph API).
 
 ## More Information
 For more information about getting started with Teams, please review the following resources:
