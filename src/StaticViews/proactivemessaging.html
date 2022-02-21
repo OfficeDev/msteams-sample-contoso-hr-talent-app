@@ -35,11 +35,10 @@
 
             //deal with response from server
             if (data.ok) {
-                let json = await data.json();
                 console.log("HTTP Status: " + data.status);
-                console.log(json);
                 console.log(data);
-                if (data.status == '200') {
+                if (data.status >= 200 && data.status <300 ) {
+                    $("#successfulRequest > span").html(data.status);
                     $("#successfulRequest").show();
                 }
                 
@@ -112,7 +111,7 @@
     </div>
 
     <div id="successfulRequest" style="display: none;">
-        200 Success! Please login to Teams as the targetted user to review.
+        <span></span> Success! Please login to Teams as the targetted user to review.
     </div>
 
     <div id="consentRequired" style="display: none;">
