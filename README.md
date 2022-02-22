@@ -5,6 +5,16 @@ A Microsoft Teams app that will be used by the Human Resources department within
 
 The lab file is attached, but it would require extra steps on your part to setup your own O365 Tenant and pre-create Teams, Channels, Personas. Please use it for your reference.
 
+# Microsoft Teams Talent Management Sample App in .NET/C#
+
+This app simulates connection to a recruiting and talent management system and allows users and teams to create, manage and search positions and candidates. The content is randomly generated to simulate what you can do with Teams. The full source code is provided, along with the app package and manifest that you can use to side load and test in your Teams environment.
+
+## Prerequisites
+Please see the Teams Apps Talent Management Lab.pdf document for a detailed list of Pre-requisites.
+
+## How to use this lab
+Open the Teams Apps Talent Management Lab.pdf document, and start working through the guidance in this document. This guide will walk you through, step-by-step, with screenshots, the setup of the app (in Visual Studio, using NGROK as the tunnel) and the setup of the Teams app, which will introduce you to how the various interfaces in Teams work when surfacing a third-party app within Teams (Tabs, Bots, Messaging Extensions, Azure AD SSO, Proactive Messaging & Graph API).
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
