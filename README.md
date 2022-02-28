@@ -1,19 +1,11 @@
-# msteams-sample-contoso-hr-talent-app
-This is a sample of the HR solution, please do not use it in a Production environment. 
-
-A Microsoft Teams app that will be used by the Human Resources department within their Microsoft Teams clients. The app will facilitate the department's hiring of new talent into the organization, provide immediate interview feedback, schedule interview loops, and improve the overall hiring process of new employees. Contoso HR Talent App will help you understand how to transform hiring and candidate management flow of new talent and make it more interactive and responsive for HR teams and interviewees.
-
-The lab file is attached, but it would require extra steps on your part to setup your own O365 Tenant and pre-create Teams, Channels, Personas. Please use it for your reference.
-
 # Microsoft Teams Talent Management Sample App in .NET/C#
 
-This app simulates connection to a recruiting and talent management system and allows users and teams to create, manage and search positions and candidates. The content is randomly generated to simulate what you can do with Teams. The full source code is provided, along with the app package and manifest that you can use to side load and test in your Teams environment.
+This app simulates connection to a recruiting and talent management system and allows users and teams to create, manage and search positions and candidates. The content is randomly generated to simulate what you can do with Teams. The full source code is provided, along with a lab guide that will walk you through the setup of this app, and how to surface it in Teams.
 
-## Prerequisites
-Please see the Teams Apps Talent Management Lab.pdf document for a detailed list of Pre-requisites.
+This is a sample of the HR solution, please do not use it in a Production environment. It is designed to demonstrate how third-party apps can be surfaced in teams using the various interfaces that exist within Teams as a Platform.
 
 ## How to use this lab
-Open the Teams Apps Talent Management Lab.pdf document, and start working through the guidance in this document. This guide will walk you through, step-by-step, with screenshots, the setup of the app (in Visual Studio, using NGROK as the tunnel) and the setup of the Teams app, which will introduce you to how the various interfaces in Teams work when surfacing a third-party app within Teams (Tabs, Bots, Messaging Extensions, Azure AD SSO, Proactive Messaging & Graph API).
+Open the [Teams Apps Talent Management Lab.pdf](/Teams%20Apps%20Talent%20Mangagement%20Lab.pdf) document, and start working through the guidance in this document. This guide will walk you through, step-by-step with screenshots, the setup of the app (in Visual Studio, using NGROK as the tunnel) and the setup of the Teams app, which will introduce you to how the various interfaces in Teams work when surfacing a third-party app within Teams (Tabs, Bots, Messaging Extensions, Azure AD SSO, Proactive Messaging & Graph API).
 
 # Contributing
 
