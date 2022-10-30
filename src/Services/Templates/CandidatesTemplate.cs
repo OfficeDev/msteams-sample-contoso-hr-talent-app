@@ -183,18 +183,17 @@ namespace TeamsTalentMgmtApp.Services.Templates
 
             if (candidate.Comments.Any() || candidate.Interviews.Any())
             {
-                var contentUrl = data.AppSettings.BaseUrl + $"StaticViews/CandidateFeedback.html?candidateId={candidate.CandidateId}";
-                card.Actions.Add(new AdaptiveOpenUrlAction
+                card.Actions.Add(new AdaptiveSubmitAction
                 {
                     Title = "Open candidate feedback",
-                    Url = new Uri(string.Format(
-                        CommonConstants.TaskModuleUrlFormat,
-                        data.AppSettings.TeamsAppId,
-                        Uri.EscapeDataString(contentUrl),
-                        Uri.EscapeDataString("Feedback for " + candidate.Name),
-                        data.AppSettings.MicrosoftAppId,
-                        "large",
-                        "large"))
+                    Data = new
+                    {
+                        CandidateId = candidate.CandidateId,
+                        msteams = new
+                        {
+                            type = "task/fetch"
+                        }
+                    }
                 });
             }
 

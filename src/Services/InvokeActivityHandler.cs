@@ -89,6 +89,19 @@ namespace TeamsTalentMgmtApp.Services
             return new InvokeResponse { Status = (int)HttpStatusCode.OK };
         }
 
+        public async Task<TaskModuleTaskInfo> HandleTaskModuleFetchAsync(TaskModuleRequest taskModuleRequest, CancellationToken cancellationToken)
+        {
+            var candidate = await _candidateService.GetById((int)((dynamic)taskModuleRequest.Data).CandidateId, cancellationToken);
+
+            return new TaskModuleTaskInfo
+            {
+                Url = _appSettings.BaseUrl.TrimEnd('/') + $"/StaticViews/CandidateFeedback.html?candidateId={candidate.CandidateId}",
+                Title = "Feedback for " + candidate.Name,
+                Height = "large",
+                Width = "large"
+            };
+        }
+
         public async Task<MessagingExtensionResponse> HandleMessagingExtensionQueryAsync(
             ITurnContext turnContext,
             MessagingExtensionQuery query,

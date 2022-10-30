@@ -47,6 +47,18 @@ namespace TeamsTalentMgmtApp.Bot
         protected override Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleSigninVerifyStateAsync(turnContext, cancellationToken);
 
+        protected override async Task<TaskModuleResponse> OnTeamsTaskModuleFetchAsync(ITurnContext<IInvokeActivity> turnContext, TaskModuleRequest taskModuleRequest, CancellationToken cancellationToken)
+        {
+            return new TaskModuleResponse
+            {
+                Task = new TaskModuleContinueResponse
+                {
+                    Type = "continue",
+                    Value = await _invokeActivityHandler.HandleTaskModuleFetchAsync(taskModuleRequest, cancellationToken)
+                }
+            };
+        }
+
         protected override Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
             => _invokeActivityHandler.HandleMessagingExtensionQueryAsync(turnContext, query, cancellationToken);
 
